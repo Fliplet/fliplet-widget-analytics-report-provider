@@ -325,6 +325,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
       endDate: '0d',
       container: '.date-picker',
       orientation: 'left',
+      weekStart: 1,
       autoclose: true
     });
     // custom dates start-date validation
