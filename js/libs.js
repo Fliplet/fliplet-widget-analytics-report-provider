@@ -1717,7 +1717,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
       '[name="screen-selector"][value="screens-sessions"]'
     ].join(', ');
 
-    moment.locale('en-GB');
+    moment.locale('en');
 
     registerHandlebarsHelpers();
     attachEventListeners();
