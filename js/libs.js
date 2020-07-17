@@ -701,7 +701,9 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
 
   function updateTimeframe(startDate, endDate) {
     // Make the dates readable
-    $container.find('.analytics-date-range').html(moment(startDate).format('D MMM \'YY') + ' - ' + moment(endDate).format('D MMM \'YY'));
+    var longDateFormat = 'D MMM \'YY';
+
+    $container.find('.analytics-date-range').html(moment(startDate).format(longDateFormat) + ' - ' + moment(endDate).format(longDateFormat));
   }
 
   function getNewDataToRender(context, limit) {
@@ -1714,6 +1716,8 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
       '[name="users-selector"][value="users-sessions"]',
       '[name="screen-selector"][value="screens-sessions"]'
     ].join(', ');
+
+    moment.locale('en');
 
     registerHandlebarsHelpers();
     attachEventListeners();
