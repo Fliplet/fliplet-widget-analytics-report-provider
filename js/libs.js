@@ -1013,17 +1013,17 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
       };
     });
 
-    // Get new devices
+    // Get new devices up to start of previous period
     var metricNewDevices = Fliplet.App.Analytics.Aggregate.count({
       source: source,
       column: 'uniqueDevices',
-      to: priorPeriodStartDate
+      to: moment(priorPeriodStartDate).subtract(1, 'ms').format('YYYY-MM-DD')
     }).then(function(countUpToStartOfPriorPeriod) {
       // 2. get devices up to end of previous period
       return Fliplet.App.Analytics.Aggregate.count({
         source: source,
         column: 'uniqueDevices',
-        to: currentPeriodStartDate
+        to: moment(currentPeriodStartDate).subtract(1, 'ms').format('YYYY-MM-DD')
       }).then(function(countUpToStartOfCurrentPeriod) {
         previousPeriodNewUsers = countUpToStartOfCurrentPeriod - countUpToStartOfPriorPeriod;
 
