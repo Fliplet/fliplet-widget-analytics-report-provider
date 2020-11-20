@@ -1,1 +1,3 @@
-# fliplet-widget-analytics-report-provider
+# Fliplet Analytics Report Widget
+
+## Provider
