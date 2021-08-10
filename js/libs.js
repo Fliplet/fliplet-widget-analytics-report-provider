@@ -382,6 +382,13 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
       .on('click', '.agenda-icon, .timeframe-text', function() {
         $container.find('.date-picker').addClass('active');
         $body.addClass('freeze');
+
+        // GA Track event
+        Fliplet.Studio.emit('track-event', {
+          category: 'app_analytics',
+          action: 'configure_timeframe'
+        });
+
         Fliplet.Studio.emit('overlay-scroll-top', {
           name: 'app-analytics'
         });
@@ -389,13 +396,27 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
       .on('click', '.close-button', function() {
         $container.find('.full-screen-overlay').removeClass('active');
         $body.removeClass('freeze');
+
         Fliplet.Widget.autosize();
+
+        // GA Track event
+        Fliplet.Studio.emit('track-event', {
+          category: 'app_analytics',
+          action: 'close_timeframe'
+        });
       })
       .on('click', '.apply-button', function() {
         var dateValue = $(this).parents('.date-picker').find('input[name="date-selector"]:checked').val();
 
         // Add spinner
         startLoading();
+
+        // GA Track event
+        Fliplet.Studio.emit('track-event', {
+          category: 'app_analytics',
+          action: 'apply_timeframe',
+          label: dateValue
+        });
 
         switch (dateValue) {
           case 'last-24-hours':
@@ -468,37 +489,76 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
       .on('click', '.more-active-users', function() {
         $container.find('.active-users-overlay').addClass('active');
         $body.addClass('freeze');
+
+        // GA Track event
+        Fliplet.Studio.emit('track-event', {
+          category: 'app_analytics',
+          action: 'see_more_about_active_users'
+        });
+
         Fliplet.Studio.emit('overlay-scroll-top', {
           name: 'app-analytics'
         });
+
         getMoreActiveUsers();
       })
       .on('click', '.actions-by-user', function() {
         $container.find('.actions-per-user-overlay').addClass('active');
         $body.addClass('freeze');
+
+        // GA Track event
+        Fliplet.Studio.emit('track-event', {
+          category: 'app_analytics',
+          action: 'see_actions_by_user'
+        });
+
         Fliplet.Studio.emit('overlay-scroll-top', {
           name: 'app-analytics'
         });
+
         renderUserActionsDatatable();
       })
       .on('click', '.more-popular-sessions', function() {
         $container.find('.popular-sessions-overlay').addClass('active');
         $body.addClass('freeze');
+
+        // GA Track event
+        Fliplet.Studio.emit('track-event', {
+          category: 'app_analytics',
+          action: 'see_more_about_popular_sessions'
+        });
+
         Fliplet.Studio.emit('overlay-scroll-top', {
           name: 'app-analytics'
         });
+
         getMorePopularScreens();
       })
       .on('click', '.actions-by-screen', function() {
         $container.find('.actions-per-screen-overlay').addClass('active');
         $body.addClass('freeze');
+
+        // GA Track event
+        Fliplet.Studio.emit('track-event', {
+          category: 'app_analytics',
+          action: 'see_actions_by_screen'
+        });
+
         Fliplet.Studio.emit('overlay-scroll-top', {
           name: 'app-analytics'
         });
+
         renderScreenActionsDatatable();
       })
       .on('change', '[name="timeline-selector"]', function() {
         var value = $('[name="timeline-selector"]:checked').val();
+
+        // GA Track event
+        Fliplet.Studio.emit('track-event', {
+          category: 'app_analytics',
+          action: 'clicked_timeline_filters',
+          label: value
+        });
 
         switch (value) {
           case 'timeline-active-users':
@@ -528,6 +588,13 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
       .on('change', '[name="users-selector"]', function() {
         var value = $('[name="users-selector"]:checked').val();
 
+        // GA Track event
+        Fliplet.Studio.emit('track-event', {
+          category: 'app_analytics',
+          action: 'clicked_active_users_filters',
+          label: value
+        });
+
         switch (value) {
           case 'users-sessions':
             $(this).parents('.analytics-box').find('.analytics-row-wrapper-users').html(compiledActiveUserTemplate(pvDataArray.activeUserData[0]));
@@ -544,6 +611,13 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
       })
       .on('change', '[name="screen-selector"]', function() {
         var value = $('[name="screen-selector"]:checked').val();
+
+        // GA Track event
+        Fliplet.Studio.emit('track-event', {
+          category: 'app_analytics',
+          action: 'clicked_popular_screens_filters',
+          label: value
+        });
 
         switch (value) {
           case 'screens-screen-views':
