@@ -249,6 +249,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
           default:
             break;
         }
+
         if (this.series.name === 'Prior period') {
           text = momentTime.format('MMM Do, HH:mm') + '<br><b>'
           + this.series.name + ':</b> ' + Highcharts.numberFormat(this.y, 0);
@@ -256,6 +257,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
           text = moment(this.x).format('MMM Do, HH:mm') + '<br><b>'
           + this.series.name + ':</b> ' + Highcharts.numberFormat(this.y, 0);
         }
+
         return text;
       }
     },
@@ -378,9 +380,12 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
     $container
       .on('click', '.date-picker-option', function() {
         var value = $('.date-picker-option:checked').val();
+
         if (value === 'custom-dates') {
           $container.find('.apply-button').prop('disabled', true);
+
           var targetHeight = $(this).parents('.date-picker').find('.custom-dates-hidden-content').outerHeight();
+
           $(this).parents('.date-picker').find('.custom-dates-inputs').animate({
             height: targetHeight
           }, 150);
@@ -476,6 +481,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
           case 'custom-dates':
             customStartDateVariable = moment($(this).parents('.date-picker').find('.pickerStartDate').data('datepicker').dates[0]).utc().format('YYYY-MM-DD');
             customEndDateVariable = moment($(this).parents('.date-picker').find('.pickerEndDate').data('datepicker').dates[0]).utc().format('YYYY-MM-DD');
+
             if (typeof customStartDateVariable === 'undefined') {
               $(this).parents('.date-picker').find('.custom-dates-inputs').css({ height: 'auto' });
               $(this).parents('.date-picker').find('.custom-start-date-alert').addClass('active');
@@ -493,6 +499,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
               getNewDataToRender('day', 5);
               closeOverlay();
             }
+
             break;
           default:
             break;
@@ -690,6 +697,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
         if (analyticsDateTime && moment().diff(moment(analyticsDateTime.lastAccessedAt), 'days') < 1) {
           pvDateTimeObject = analyticsDateTime;
           dateSelectMode = pvDateTimeObject.dateSelectMode;
+
           if (pvDateTimeObject.sd.match(/^\d{4}-\d{2}-\d{2}$/)) {
             analyticsStartDate = pvDateTimeObject.sd;
             analyticsEndDate = pvDateTimeObject.ed;
@@ -732,6 +740,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
           getPopularScreenData(analyticsStartDate, analyticsEndDate, 5)
         ]).then(function(data) {
           var periodDurationInMs = moment.duration(moment(analyticsEndDate).diff(moment(analyticsStartDate))).add(context !== 'hour' ? 1 : 0, context || 'day').asMilliseconds();
+
           prepareDataToRender(data, periodDurationInMs, context || 'day');
 
           stopLoading();
@@ -744,6 +753,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
 
   function calculateAnalyticsDatesFor24Hrs() {
     var d = moment();
+
     analyticsEndDate = d.format('YYYY-MM-DD');
     analyticsStartDate = d.subtract(1, 'day').format('YYYY-MM-DD');
     analyticsPrevEndDate = d.subtract(1, 'day').format('YYYY-MM-DD');
@@ -804,6 +814,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
       getPopularScreenData(analyticsStartDate, analyticsEndDate, limit)
     ]).then(function(data) {
       var periodDurationInMs = moment.duration(moment(analyticsEndDate).diff(moment(analyticsStartDate))).add(context !== 'hour' ? 1 : 0, context).asMilliseconds();
+
       prepareDataToRender(data, periodDurationInMs, context);
 
       stopLoading();
@@ -832,6 +843,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
     var prior = data[0];
     var current = data[1];
     var aggregatedData = [];
+
     if (prior) {
       aggregatedData.push({
         count: prior.data.map(function(x) { return +x[type]; }).reduce(function(a, b) { return a + b; }, 0),
@@ -839,6 +851,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
         periodEnd: prior.periodEnd
       });
     }
+
     if (current) {
       aggregatedData.push({
         count: current.data.map(function(x) { return +x[type]; }).reduce(function(a, b) { return a + b; }, 0),
@@ -846,14 +859,17 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
         periodEnd: current.periodEnd
       });
     }
+
     return aggregatedData;
   }
 
   function renderData(periodInMs, context) {
     // RENDER APP METRICS
     var appMetricsArrayData = [];
+
     pvDataArray.metricsData.forEach(function(arr, index) {
       var newObj = {};
+
       switch (index) {
         case 0:
           newObj['Title'] = 'Active devices';
@@ -883,6 +899,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
         default:
           break;
       }
+
       appMetricsArrayData.push(newObj);
     });
     $container.find('.analytics-row-wrapper-metrics').html(compiledAppMetricsTemplate(appMetricsArrayData));
@@ -926,6 +943,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
         case 0:
           period.data.forEach(function(obj) {
             var newArray = [];
+
             newArray.push((moment(obj[context]).valueOf()) + pvDataArray.periodInMs);
             newArray.push(parseInt(obj.uniqueDevices || obj.uniqueDeviceTracking, 10));
             timelineActiveDevicesDataPrior.push(newArray);
@@ -934,6 +952,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
         case 1:
           period.data.forEach(function(obj) {
             var newArray = [];
+
             newArray.push(moment(obj[context]).valueOf());
             newArray.push(parseInt(obj.uniqueDevices || obj.uniqueDeviceTracking, 10));
             timelineActiveDevicesData.push(newArray);
@@ -958,6 +977,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
         case 0:
           period.data.forEach(function(obj) {
             var newArray = [];
+
             newArray.push((moment(obj[context]).valueOf()) + pvDataArray.periodInMs);
             newArray.push(parseInt(obj.uniqueSessions || obj.sessionsCount, 10));
             timelineSessionsDataPrior.push(newArray);
@@ -966,6 +986,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
         case 1:
           period.data.forEach(function(obj) {
             var newArray = [];
+
             newArray.push(moment(obj[context]).valueOf());
             newArray.push(parseInt(obj.uniqueSessions || obj.sessionsCount, 10));
             timelineSessionsData.push(newArray);
@@ -990,6 +1011,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
         case 0:
           period.data.forEach(function(obj) {
             var newArray = [];
+
             newArray.push((moment(obj[context]).valueOf()) + pvDataArray.periodInMs);
             newArray.push(parseInt(obj.totalPageViews || obj.count, 10));
             timelineScreenViewsDataPrior.push(newArray);
@@ -998,6 +1020,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
         case 1:
           period.data.forEach(function(obj) {
             var newArray = [];
+
             newArray.push(moment(obj[context]).valueOf());
             newArray.push(parseInt(obj.totalPageViews || obj.count, 10));
             timelineScreenViewsData.push(newArray);
@@ -1022,6 +1045,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
         case 0:
           period.data.forEach(function(obj) {
             var newArray = [];
+
             newArray.push((moment(obj[context]).valueOf()) + pvDataArray.periodInMs);
             newArray.push(parseInt(obj.totalEvents || obj.count, 10));
             timelineInteractionsDataPrior.push(newArray);
@@ -1030,6 +1054,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
         case 1:
           period.data.forEach(function(obj) {
             var newArray = [];
+
             newArray.push(moment(obj[context]).valueOf());
             newArray.push(parseInt(obj.totalEvents || obj.count, 10));
             timelineInteractionsData.push(newArray);
@@ -1086,6 +1111,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
       to: moment(currentPeriodStartDate).subtract(1, 'ms').format('YYYY-MM-DD')
     }).then(function(previousPeriod) {
       previousPeriodUsers = previousPeriod;
+
       // 2. get devices up to end of previous period
       return Fliplet.App.Analytics.Aggregate.count({
         source: source,
@@ -1094,6 +1120,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
         to: currentPeriodEndDate
       }).then(function(currentPeriod) {
         currentPeriodUsers = currentPeriod;
+
         return;
       });
     }).then(function() {
@@ -1235,6 +1262,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
 
     return Promise.all([metricDevices, metricNewDevices, metricSessions, metricScreenViews, metricInteractions]).then(function(results) {
       setLoadingProgress(25);
+
       return results;
     });
   }
@@ -1338,6 +1366,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
 
     return Promise.all([timelineDevices, timelineSessions, timelineScreenViews, timelineInteractions]).then(function(results) {
       setLoadingProgress(25);
+
       return results;
     });
   }
@@ -1375,6 +1404,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
 
     return Promise.all([userTableSessions, userTableScreenViews, userTableInteractions]).then(function(results) {
       setLoadingProgress(25);
+
       return results;
     });
   }
@@ -1412,6 +1442,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
 
     return Promise.all([screenTableScreenViews, screenTableSessions, screenTableScreenInteractions]).then(function(results) {
       setLoadingProgress(25);
+
       return results;
     });
   }
@@ -1431,6 +1462,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
         }
       ]
     };
+
     where = Object.assign(where, searchClause);
 
     return Fliplet.App.Analytics.get({
@@ -1457,6 +1489,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
         });
 
         cachedUserActionData = { data: data, count: pageEvents.count.length };
+
         return cachedUserActionData;
       });
   }
@@ -1478,11 +1511,13 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
           var searchClause = {
             $and: searchedColumns.map(function(sc) {
               var clause = {};
+
               if (sc.column === 'type') {
                 clause[sc.column] = { $iLike: '%app.analytics.' + sc.value + '%' };
               } else {
                 clause[sc.column] = { $iLike: '%' + sc.value + '%' };
               }
+
               return clause;
             })
           };
@@ -1545,6 +1580,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
       });
       renderColumnFilters(actionsPerUserTable);
     }
+
     setTimeout(function() {
       Fliplet.Studio.emit('widget-autosize', {
         height: $('.full-screen-overlay.active').find('.dataTables_wrapper').outerHeight() + DATATABLE_HEADER_AND_FOOTER_HEIGHT
@@ -1583,7 +1619,9 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
             'Count': parseInt(event.count, 10) || 0
           };
         });
+
         cachedScreenActionData = { data: data, count: pageEvents.count.length };
+
         return cachedScreenActionData;
       });
   }
@@ -1605,7 +1643,9 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
           var searchClause = {
             $and: searchedColumns.map(function(sc) {
               var clause = {};
+
               clause[sc.column] = { $iLike: '%' + sc.value + '%' };
+
               return clause;
             })
           };
@@ -1664,6 +1704,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
       });
       renderColumnFilters(actionsPerScreenTable);
     }
+
     setTimeout(function() {
       Fliplet.Studio.emit('widget-autosize', {
         height: $('.full-screen-overlay.active').find('.dataTables_wrapper').outerHeight() + DATATABLE_HEADER_AND_FOOTER_HEIGHT
@@ -1675,6 +1716,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
     table.columns().every(function() {
       var column = this;
       var input = $('<input type="text" class="filter" />');
+
       input.appendTo($(column.header()));
       input.on('click', function(event) {
         event.stopPropagation();
@@ -1702,7 +1744,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
         query.limit = data.length;
         query.offset = data.start;
 
-        query.order = data.order.map(function (order) {
+        query.order = data.order.map(function(order) {
           return [data.columns[order.column].data, order.dir];
         });
 
@@ -1711,12 +1753,12 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
           query.where[column] = { $iLike: '%' + data.search.value + '%' };
         }
 
-        Fliplet.App.Analytics.Aggregate.get(query).then(function (results) {
+        Fliplet.App.Analytics.Aggregate.get(query).then(function(results) {
           callback({
             data: results.logs,
             recordsTotal: results.count,
             recordsFiltered: results.count
-          })
+          });
         });
       },
       dom: 'Blfrtip',
