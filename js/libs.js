@@ -796,7 +796,17 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
 
   function updateTimeframe(startDate, endDate) {
     // Make the dates readable
-    $container.find('.analytics-date-range').html(TD(startDate, { format: 'll' }) + ' – ' + TD(endDate, { format: 'll' }));
+    var locale = navigator.language.indexOf('en') === 0 ? navigator.language : 'en';
+    var options = {
+      format: 'll',
+      locale: locale
+    };
+    var html = [
+      TD(startDate, options),
+      TD(endDate, options)
+    ].join(' – ');
+
+    $container.find('.analytics-date-range').html(html);
   }
 
   function getNewDataToRender(context, limit) {
