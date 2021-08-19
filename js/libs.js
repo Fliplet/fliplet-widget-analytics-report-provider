@@ -41,9 +41,6 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
   var DATATABLE_HEADER_AND_FOOTER_HEIGHT = 120;
   var source = 'production';
 
-  var locale = navigator.language || 'en';
-  var localeData = moment.localeData(locale);
-
   var configTableContext = {
     'users-sessions': {
       dataIndex: 0,
@@ -325,6 +322,8 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
     /** *******************************************************
     Date picker overlay
     **********************************************************/
+    var locale = navigator.language || 'en';
+    var localeData = moment.localeData(locale);
     var format = localeData.longDateFormat('L');
 
     var dateDelimiters = /[./-]/g;
@@ -797,13 +796,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
 
   function updateTimeframe(startDate, endDate) {
     // Make the dates readable
-    var longDateFormat = 'll';
-    var html = [
-      moment(startDate).locale(locale).format(longDateFormat),
-      moment(endDate).locale(locale).format(longDateFormat)
-    ].join(' – ');
-
-    $container.find('.analytics-date-range').html(html);
+    $container.find('.analytics-date-range').html(TD(startDate, { format: 'll' }) + ' – ' + TD(endDate, { format: 'll' }));
   }
 
   function getNewDataToRender(context, limit) {
