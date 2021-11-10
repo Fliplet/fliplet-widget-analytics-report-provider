@@ -1,3 +1,7 @@
+// To run experiment
+// To be removed once experiment is over
+Fliplet.TagManager.init();
+
 // Include your namespaced libraries
 var AnalyticsReport = new Fliplet.Registry.get('comflipletanalytics-report:1.0:core');
 var analyticsReports = [];
