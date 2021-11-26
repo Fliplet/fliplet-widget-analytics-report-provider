@@ -1581,14 +1581,14 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
           }
         }
       });
+      actionsPerUserTable.on('draw', function() {
+        // Resize the overlay based on table size
+        var height = $('.full-screen-overlay.active').find('.dataTables_wrapper').outerHeight() + DATATABLE_HEADER_AND_FOOTER_HEIGHT;
+
+        Fliplet.Widget.autosize(height);
+      });
       renderColumnFilters(actionsPerUserTable);
     }
-
-    setTimeout(function() {
-      Fliplet.Studio.emit('widget-autosize', {
-        height: $('.full-screen-overlay.active').find('.dataTables_wrapper').outerHeight() + DATATABLE_HEADER_AND_FOOTER_HEIGHT
-      });
-    }, 1000);
   }
 
   function loadScreenActionsData(limit, offset, searchClause, orderArray) {
@@ -1705,14 +1705,14 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
           }
         }
       });
+      actionsPerScreenTable.on('draw', function() {
+        // Resize the overlay based on table size
+        var height = $('.full-screen-overlay.active').find('.dataTables_wrapper').outerHeight() + DATATABLE_HEADER_AND_FOOTER_HEIGHT;
+
+        Fliplet.Widget.autosize(height);
+      });
       renderColumnFilters(actionsPerScreenTable);
     }
-
-    setTimeout(function() {
-      Fliplet.Studio.emit('widget-autosize', {
-        height: $('.full-screen-overlay.active').find('.dataTables_wrapper').outerHeight() + DATATABLE_HEADER_AND_FOOTER_HEIGHT
-      });
-    }, 1000);
   }
 
   function renderColumnFilters(table) {
@@ -1864,7 +1864,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
     chartInitialization(chartContainer, getChartConfig());
 
     // Run once on load
-    getDataFromPersistantVariable();
+    getDataFromPersistentVariable();
   }
 
   start();
