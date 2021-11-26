@@ -689,7 +689,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
     });
   }
 
-  function getDataFromPersistantVariable() {
+  function getDataFromPersistentVariable() {
     // get dates and times
     Fliplet.App.Storage.get(DATE_STORE_KEY)
       .then(function(analyticsDateTime) {
