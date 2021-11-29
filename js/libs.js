@@ -1715,6 +1715,12 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
     }
   }
 
+  var columnSearch = _.debounce(function(column, value) {
+    column
+      .search(value)
+      .draw();
+  }, 500);
+
   function renderColumnFilters(table) {
     table.columns().every(function() {
       var column = this;
@@ -1725,9 +1731,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
         event.stopPropagation();
       });
       input.on('input', function() {
-        column
-          .search(this.value)
-          .draw();
+        columnSearch(column, this.value);
       });
     });
   }
