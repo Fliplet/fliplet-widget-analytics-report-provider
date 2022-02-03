@@ -1566,7 +1566,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
         buttons: [
           {
             extend: 'excel',
-            text: 'export visible entries to Excel'
+            text: 'Export visible entries to Excel'
           }
         ],
         lengthMenu: [10, 25, 50, 100, 500],
@@ -1690,7 +1690,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
         buttons: [
           {
             extend: 'excel',
-            text: 'export visible entries to Excel'
+            text: 'Export visible entries to Excel'
           }
         ],
         lengthMenu: [10, 25, 50, 100, 500],
@@ -1772,7 +1772,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
       buttons: [
         {
           extend: 'excel',
-          text: 'export visible entries to Excel'
+          text: 'Export visible entries to Excel'
         }
       ],
       lengthMenu: [10, 25, 50, 100, 500],
