@@ -30,6 +30,7 @@ Fliplet.Widget.register('AnalyticsReport:1.0.0', function() {
     }
 
     var report;
+
     options = options || {};
 
     if (Object.keys(analyticsReports).length === 1 && false) {

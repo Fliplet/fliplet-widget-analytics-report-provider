@@ -1871,7 +1871,9 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
     getDataFromPersistentVariable();
   }
 
-  start();
+  Fliplet().then(function() {
+    start();
+  });
 
   return {
     getChartConfig: getChartConfig,
