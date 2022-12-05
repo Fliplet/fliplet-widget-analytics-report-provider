@@ -11,7 +11,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
   var analyticsPrevEndDate;
   var customStartDateVariable;
   var customEndDateVariable;
-  var timeDeltaInMillisecs;
+  var timeDeltaInMs;
   var pvDateTimeObject;
   var pvDataArray = {};
   var timelineActiveDevicesDataPrior = [];
@@ -241,7 +241,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
             momentTime = moment(this.x).subtract(12, 'months');
             break;
           case 'custom-dates':
-            momentTime = moment(this.x).subtract(timeDeltaInMillisecs);
+            momentTime = moment(this.x).subtract(timeDeltaInMs);
             break;
           default:
             break;
@@ -445,12 +445,14 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
           case 'last-7-days':
             dateSelectMode = dateValue;
             calculateAnalyticsDates(7);
+            calculateAnalyticsDates(7);
             updateTimeframe(analyticsStartDate, analyticsEndDate);
             getNewDataToRender('day', 5);
             closeOverlay();
             break;
           case 'last-30-days':
             dateSelectMode = dateValue;
+            calculateAnalyticsDates(30);
             calculateAnalyticsDates(30);
             updateTimeframe(analyticsStartDate, analyticsEndDate);
             getNewDataToRender('day', 5);
@@ -459,6 +461,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
           case 'last-90-days':
             dateSelectMode = dateValue;
             calculateAnalyticsDates(90);
+            calculateAnalyticsDates(90);
             updateTimeframe(analyticsStartDate, analyticsEndDate);
             getNewDataToRender('day', 5);
             closeOverlay();
@@ -466,12 +469,14 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
           case 'last-6-months':
             dateSelectMode = dateValue;
             calculateAnalyticsDatesByMonth(6);
+            calculateAnalyticsDatesByMonth(6);
             updateTimeframe(analyticsStartDate, analyticsEndDate);
             getNewDataToRender('day', 5);
             closeOverlay();
             break;
           case 'last-12-months':
             dateSelectMode = dateValue;
+            calculateAnalyticsDatesByMonth(12);
             calculateAnalyticsDatesByMonth(12);
             updateTimeframe(analyticsStartDate, analyticsEndDate);
             getNewDataToRender('day', 5);
@@ -491,9 +496,10 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
               $(this).parents('.date-picker').find('.custom-dates-inputs').css({ height: 'auto' });
               $(this).parents('.date-picker').find('.custom-end-date-alert').addClass('active');
             } else {
-            // no validation errors so update the dates
+              // No validation errors so update the dates
               dateSelectMode = dateValue;
-              calculateAnalyticsDatesCustom(customStartDateVariable, customEndDateVariable, true);
+              calculateAnalyticsDatesCustom(customStartDateVariable, customEndDateVariable);
+              calculateAnalyticsDatesCustom(customStartDateVariable, customEndDateVariable);
               updateTimeframe(analyticsStartDate, analyticsEndDate);
               getNewDataToRender('day', 5);
               closeOverlay();
@@ -715,6 +721,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
           // default to last 7 days if nothing previously selected
           dateSelectMode = 'last-7-days';
           calculateAnalyticsDates(7);
+          calculateAnalyticsDates(7);
           updateTimeframe(analyticsStartDate, analyticsEndDate);
         }
       });
@@ -759,39 +766,38 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
     analyticsPrevStartDate = d.subtract(1, 'day').format('YYYY-MM-DD');
   }
 
-  function calculateAnalyticsDates(daysToGoBack) {
-    analyticsStartDate = moment().utc().format('YYYY-MM-DD');
-    analyticsEndDate = moment().utc().format('YYYY-MM-DD');
-    calculateAnalyticsDatesCustom(analyticsStartDate, analyticsEndDate, false, 'days', daysToGoBack);
+  function calculateAnalyticsDates(lastXDays) {
+    analyticsStartDate = moment().subtract(lastXDays, 'day').format('YYYY-MM-DD');
+    analyticsEndDate = moment().subtract(1, 'day').format('YYYY-MM-DD');
+
+    // Set previous period start & end dates
+    analyticsPrevStartDate = moment(analyticsStartDate).subtract(lastXDays, 'day').format('YYYY-MM-DD');
+    analyticsPrevEndDate = moment(analyticsEndDate).subtract(lastXDays, 'day').format('YYYY-MM-DD');
   }
 
-  function calculateAnalyticsDatesByMonth(monthsToGoBack) {
-    analyticsStartDate = moment().utc().format('YYYY-MM-DD');
-    analyticsEndDate = moment().utc().format('YYYY-MM-DD');
-    calculateAnalyticsDatesCustom(analyticsStartDate, analyticsEndDate, false, 'months', monthsToGoBack);
+  function calculateAnalyticsDatesByMonth(lastXMonths) {
+    analyticsStartDate = moment().subtract(lastXMonths, 'month').startOf('month').format('YYYY-MM-DD');
+    analyticsEndDate = moment().subtract(1, 'month').endOf('month').format('YYYY-MM-DD');
+
+    // Set previous period start & end dates
+    analyticsPrevStartDate = moment().subtract(2 * lastXMonths, 'month').startOf('month').format('YYYY-MM-DD');
+    analyticsPrevEndDate = moment().subtract(lastXMonths, 'month').startOf('month').subtract(1, 'day').format('YYYY-MM-DD');
   }
 
-  function calculateAnalyticsDatesCustom(customStartDate, customEndDate, isCustom, time, timeToGoBack) {
-    if (isCustom) {
-      timeToGoBack = moment(customEndDate).diff(moment(customStartDate), 'days') + 1;
-      timeDeltaInMillisecs = moment(customEndDate).diff(moment(customStartDate), 'ms');
-      time = 'days';
+  function calculateAnalyticsDatesCustom(customStartDate, customEndDate) {
+    var totalDays = moment(customEndDate).diff(moment(customStartDate), 'days') + 1;
 
-      // Set start date
-      analyticsStartDate = customStartDate;
-      // Set end date
-      analyticsEndDate = customEndDate;
-    } else {
-      // Set start date
-      analyticsStartDate = moment(customStartDate).subtract(timeToGoBack, time).add(1, 'day').format('YYYY-MM-DD');
-      // Set end date
-      analyticsEndDate = customEndDate;
-    }
+    timeDeltaInMs = moment(customEndDate).diff(moment(customStartDate), 'ms');
+
+    // Set start date
+    analyticsStartDate = customStartDate;
+    // Set end date
+    analyticsEndDate = customEndDate;
 
     // Set previous period start date
-    analyticsPrevStartDate = moment(analyticsStartDate).subtract(timeToGoBack, time).format('YYYY-MM-DD');
+    analyticsPrevStartDate = moment(analyticsStartDate).subtract(totalDays, 'days').format('YYYY-MM-DD');
     // Set previous period end date
-    analyticsPrevEndDate = moment(analyticsEndDate).subtract(timeToGoBack, time).format('YYYY-MM-DD');
+    analyticsPrevEndDate = moment(analyticsEndDate).subtract(totalDays, 'days').format('YYYY-MM-DD');
   }
 
   function updateTimeframe(startDate, endDate) {
