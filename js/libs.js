@@ -679,8 +679,8 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
     $body.removeClass('freeze');
   }
 
-  function storeDataToPersistantVariable() {
-    // save dates to a persistant variable
+  function storeDataToPersistentVariable() {
+    // save dates to a persistent variable
     pvDateTimeObject = {
       dateSelectMode: dateSelectMode || 'last-7-days',
       lastAccessedAt: moment().valueOf(),
@@ -844,7 +844,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
       data: data
     };
 
-    storeDataToPersistantVariable();
+    storeDataToPersistentVariable();
     renderData(periodInMs, context);
   }
 
@@ -1239,7 +1239,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
     } else {
       metricSessions = Fliplet.App.Analytics.Aggregate.get({
         source: source,
-        period: Math.floor(periodDuration.asDays()),
+        period: Math.round(periodDuration.asDays()),
         from: priorPeriodStartDate,
         to: currentPeriodEndDate,
         sum: 'uniqueSessions'
@@ -1249,7 +1249,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
 
       metricScreenViews = Fliplet.App.Analytics.Aggregate.get({
         source: source,
-        period: Math.floor(periodDuration.asDays()),
+        period: Math.round(periodDuration.asDays()),
         from: priorPeriodStartDate,
         to: currentPeriodEndDate,
         sum: 'totalPageViews'
@@ -1260,7 +1260,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
 
       metricInteractions = Fliplet.App.Analytics.Aggregate.get({
         source: source,
-        period: Math.floor(periodDuration.asDays()),
+        period: Math.round(periodDuration.asDays()),
         from: priorPeriodStartDate,
         to: currentPeriodEndDate,
         sum: 'totalEvents'
@@ -1283,7 +1283,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
     if (!useLiveData) {
       return Fliplet.App.Analytics.Aggregate.get({
         source: source,
-        period: Math.floor(periodDuration.asDays()),
+        period: Math.round(periodDuration.asDays()),
         from: priorPeriodStartDate,
         to: currentPeriodEndDate
       }).then(function(logs) {
@@ -1751,7 +1751,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
     $container.find(configTableContext[context].selectorsToHide).addClass('hidden');
 
     var options = _.extend({}, configTableContext[context], {
-      ajax: function(data, callback, settings) {
+      ajax: function(data, callback) {
         var query = _.extend({}, xhrOptions);
 
         query.limit = data.length;
