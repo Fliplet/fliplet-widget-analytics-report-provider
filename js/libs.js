@@ -1239,7 +1239,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
     } else {
       metricSessions = Fliplet.App.Analytics.Aggregate.get({
         source: source,
-        period: Math.floor(periodDuration.asDays()),
+        period: Math.round(periodDuration.asDays()),
         from: priorPeriodStartDate,
         to: currentPeriodEndDate,
         sum: 'uniqueSessions'
@@ -1249,7 +1249,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
 
       metricScreenViews = Fliplet.App.Analytics.Aggregate.get({
         source: source,
-        period: Math.floor(periodDuration.asDays()),
+        period: Math.round(periodDuration.asDays()),
         from: priorPeriodStartDate,
         to: currentPeriodEndDate,
         sum: 'totalPageViews'
@@ -1260,7 +1260,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
 
       metricInteractions = Fliplet.App.Analytics.Aggregate.get({
         source: source,
-        period: Math.floor(periodDuration.asDays()),
+        period: Math.round(periodDuration.asDays()),
         from: priorPeriodStartDate,
         to: currentPeriodEndDate,
         sum: 'totalEvents'
@@ -1283,7 +1283,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
     if (!useLiveData) {
       return Fliplet.App.Analytics.Aggregate.get({
         source: source,
-        period: Math.floor(periodDuration.asDays()),
+        period: Math.round(periodDuration.asDays()),
         from: priorPeriodStartDate,
         to: currentPeriodEndDate
       }).then(function(logs) {
