@@ -679,8 +679,8 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
     $body.removeClass('freeze');
   }
 
-  function storeDataToPersistantVariable() {
-    // save dates to a persistant variable
+  function storeDataToPersistentVariable() {
+    // save dates to a persistent variable
     pvDateTimeObject = {
       dateSelectMode: dateSelectMode || 'last-7-days',
       lastAccessedAt: moment().valueOf(),
@@ -844,7 +844,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
       data: data
     };
 
-    storeDataToPersistantVariable();
+    storeDataToPersistentVariable();
     renderData(periodInMs, context);
   }
 
@@ -1751,7 +1751,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
     $container.find(configTableContext[context].selectorsToHide).addClass('hidden');
 
     var options = _.extend({}, configTableContext[context], {
-      ajax: function(data, callback, settings) {
+      ajax: function(data, callback) {
         var query = _.extend({}, xhrOptions);
 
         query.limit = data.length;

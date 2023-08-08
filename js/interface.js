@@ -16,7 +16,7 @@ window.addEventListener('resize', function() {
   }
 });
 
-// Sample implementation to initialise the widget
+// Sample implementation to initialize the widget
 analyticsReports.push({
   id: data.id,
   uuid: data.uuid,
@@ -33,6 +33,7 @@ Fliplet.Widget.register('AnalyticsReport:1.0.0', function() {
 
     options = options || {};
 
+    // eslint-disable-next-line no-constant-condition
     if (Object.keys(analyticsReports).length === 1 && false) {
       report = analyticsReports[Object.keys(analyticsReports)[0]];
     } else if (options.id) {
