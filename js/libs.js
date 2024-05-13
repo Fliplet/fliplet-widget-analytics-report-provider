@@ -310,7 +310,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
         num = parseInt(num, 10);
       }
 
-      if (isNaN(num)) {
+      if (isNaN(num) || num === null) {
         return;
       }
 
@@ -1054,17 +1054,20 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
     Fliplet.Widget.autosize();
   }
 
-  const sumBy = (key) => (arr) => arr.reduce((acc, obj) => acc + (obj[key] || 0), 0);
+  const sumBy = (key) => (arr) => arr?.reduce((acc, obj) => acc + (obj[key] || 0), 0) || 0;
+  const divideSafely = (a, b) => b === 0 ? 0 : a / b;
 
   async function getMetricsData(currentPeriodStartDate, currentPeriodEndDate, priorPeriodStartDate, groupBy) {
     const periodDuration = moment.duration(moment(currentPeriodEndDate).diff(moment(currentPeriodStartDate))).add(groupBy !== 'hour' ? 1 : 0, groupBy);
 
-    const { logs: { 0: { data: prior }, 1: { data: current } } } = await Fliplet.App.Analytics.Aggregate.get({
+    const { logs } = await Fliplet.App.Analytics.Aggregate.get({
       source: source,
       period: Math.round(periodDuration.asDays()),
       from: priorPeriodStartDate,
       to: currentPeriodEndDate,
     });
+
+    const { 0: { data: prior }, 1: { data: current } } = logs || [{}, {}];
 
     setLoadingProgress(25);
 
@@ -1073,8 +1076,8 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
     const returningDevices = [activeDevices[0] - newDevices[0], activeDevices[1] - newDevices[1]];
     const sessions = [sumBy('uniqueSessions')(prior), sumBy('uniqueSessions')(current)];
     const screenViews = [sumBy('totalPageViews')(prior), sumBy('totalPageViews')(current)];
-    const avgScreenPerSession = [screenViews[0] / sessions[0], screenViews[1] / sessions[1]];
-    const avgSessionDuration = [sumBy('totalSessionDuration')(prior) / sessions[0], sumBy('totalSessionDuration')(current) / sessions[1]];
+    const avgScreenPerSession = [divideSafely(screenViews[0], sessions[0]), divideSafely(screenViews[1], sessions[1])];
+    const avgSessionDuration = [divideSafely(sumBy('totalSessionDuration')(prior), sessions[0]), divideSafely(sumBy('totalSessionDuration')(current), sessions[1])];
     const interactions = [sumBy('totalEvents')(prior), sumBy('totalEvents')(current)];
 
     return {
