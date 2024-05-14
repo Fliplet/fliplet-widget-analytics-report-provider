@@ -1294,6 +1294,27 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
     });
   }
 
+  async function getCommunicationData(currentPeriodStartDate, currentPeriodEndDate ) {
+    const { logs } = await Fliplet.App.Analytics.Aggregate.get({
+      source,
+      from: currentPeriodStartDate,
+      to: currentPeriodEndDate,
+      includeCount: true,
+      group: 'app',
+      sum: ['sentEmails', 'sentPushNotifications', 'sentSMS'],
+      limit: 10,
+      offset: 0,
+    });
+
+    const { 0: { sentEmails, sentSMS, sentPushNotifications } } = logs || [{ sentEmails: 0, sentSMS: 0, sentPushNotifications: 0 }];
+
+    return {
+      sentEmails,
+      sentSMS,
+      sentPushNotifications
+    }
+  } 
+
   function getTimelineData(currentPeriodStartDate, currentPeriodEndDate, priorPeriodStartDate, groupBy) {
     var periodDuration = moment.duration(moment(currentPeriodEndDate).diff(moment(currentPeriodStartDate))).add(groupBy !== 'hour' ? 1 : 0, groupBy);
     var useLiveData = groupBy === 'hour' || moment().diff(moment(priorPeriodStartDate), 'hours') <= 48;
