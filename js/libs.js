@@ -837,32 +837,10 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
 
   function renderData(periodInMs, context) {
     // RENDER APP METRICS
+    renderAppMetrics({ container: $container[0], appMetrics: pvDataArray.metricsData});
     
-    // title also handles order of metrics
-    const titles = {
-      activeDevices: 'Active devices',
-      newDevices: 'New devices',
-      returningDevices: 'Returning devices',
-      sessions: 'Sessions',
-      screenViews: 'Screen views',
-      avgScreenPerSession: 'Avg. screens per session',
-      avgSessionDuration: 'Avg. session duration',
-      interactions: 'Interactions'
-    };
-
-    console.log(pvDataArray.metricsData)
- 
-    const appMetricsArrayData = Object.entries(titles).map(([key, Title]) => {
-      const [ prior, current ] = pvDataArray.metricsData[key];
-      
-      return {
-        Title,
-        'Prior period': prior,
-        'Selected period': current
-      };
-    });
-
-    $container.find('.analytics-row-wrapper-metrics').html(compiledAppMetricsTemplate(appMetricsArrayData));
+    // RENDER SESSION METRICS
+    renderSessionMetrics({ container: $container[0], sessionMetrics: pvDataArray.metricsData });
 
     // RENDER MOST ACTIVE USERS
     switch ($container.find('[name="users-selector"]:checked').val()) {
@@ -1092,7 +1070,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
       avgSessionDuration,
       interactions
     };
-  }
+  } 
 
   function getTimelineData(currentPeriodStartDate, currentPeriodEndDate, priorPeriodStartDate, groupBy) {
     var periodDuration = moment.duration(moment(currentPeriodEndDate).diff(moment(currentPeriodStartDate))).add(groupBy !== 'hour' ? 1 : 0, groupBy);
