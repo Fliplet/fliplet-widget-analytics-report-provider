@@ -850,6 +850,8 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
       interactions: 'Interactions'
     };
 
+    console.log(pvDataArray.metricsData)
+ 
     const appMetricsArrayData = Object.entries(titles).map(([key, Title]) => {
       const [ prior, current ] = pvDataArray.metricsData[key];
       
@@ -1054,25 +1056,25 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
     Fliplet.Widget.autosize();
   }
 
-  const sumBy = (key) => (arr) => arr?.reduce((acc, obj) => acc + (obj[key] || 0), 0) || 0;
+  const sumBy = (key) => (arr) => arr?.reduce((acc, obj) => acc + (+obj[key] || 0), 0) || 0;
   const divideSafely = (a, b) => b === 0 ? 0 : a / b;
 
   async function getMetricsData(currentPeriodStartDate, currentPeriodEndDate, priorPeriodStartDate, groupBy) {
     const periodDuration = moment.duration(moment(currentPeriodEndDate).diff(moment(currentPeriodStartDate))).add(groupBy !== 'hour' ? 1 : 0, groupBy);
 
-    const { logs } = await Fliplet.App.Analytics.Aggregate.get({
+    const response = await Fliplet.App.Analytics.Aggregate.get({
       source: source,
       period: Math.round(periodDuration.asDays()),
       from: priorPeriodStartDate,
       to: currentPeriodEndDate,
     });
-
-    const { 0: { data: prior }, 1: { data: current } } = logs || [{}, {}];
+    
+    const { 0: { data: prior } = {}, 1: { data: current } = {} } = response.logs || response || [{}, {}];
 
     setLoadingProgress(25);
 
-    const activeDevices = [sumBy('uniqueDevices')(prior), sumBy('uniqueDevices')(current)];
-    const newDevices = [sumBy('newDevices')(prior), sumBy('newDevices')(current)];
+    const activeDevices = [sumBy('totalDevices')(prior), sumBy('totalDevices')(current)];
+    const newDevices = [sumBy('uniqueDevices')(prior), sumBy('uniqueDevices')(current)];
     const returningDevices = [activeDevices[0] - newDevices[0], activeDevices[1] - newDevices[1]];
     const sessions = [sumBy('uniqueSessions')(prior), sumBy('uniqueSessions')(current)];
     const screenViews = [sumBy('totalPageViews')(prior), sumBy('totalPageViews')(current)];
