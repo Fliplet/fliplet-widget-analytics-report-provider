@@ -1,5 +1,5 @@
 const formatters = {
-  number: (num) => +num.toLocaleString(),
+  number: (num) => (+num).toLocaleString(),
   round: (num) => formatters.number(Math.round(+num)),
   time: function (time) {
     const hours = Math.floor(time / 3600);
@@ -30,7 +30,7 @@ function renderAppMetrics({ container, appMetrics }) {
     ([key, title]) => {
       const [prior, current] = appMetrics[key];
 
-      return { title, prior: formatters.number(prior), current: formatters.number(current) };
+      return { title, prior: formatters.number(prior), current: formatters.number(current) }; 
     }
   );
 

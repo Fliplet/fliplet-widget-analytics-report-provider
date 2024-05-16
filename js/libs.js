@@ -31,7 +31,6 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
   var actionsPerUserTable;
   var actionsPerScreenTable;
 
-  var compiledAppMetricsTemplate = Handlebars.compile(Fliplet.Widget.Templates['templates.interface.app-metrics']());
   var compiledActiveUserTemplate = Handlebars.compile(Fliplet.Widget.Templates['templates.interface.active-user']());
   var compiledPopularScreenTemplate = Handlebars.compile(Fliplet.Widget.Templates['templates.interface.popular-screen']());
 
