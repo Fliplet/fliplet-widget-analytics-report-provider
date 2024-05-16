@@ -47,7 +47,10 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
       tableSelector: '.active-users-full-table-sessions',
       columns: [
         { data: 'userEmail' },
-        { data: 'count' }
+        { data: 'uniqueSessions' },
+        { data: 'avgScreenPerSession' },
+        { data: 'avgInteractionPerSession' },
+        { data: 'avgSessionDuration' }
       ],
       otherTableOne: 'users-screen-views',
       otherTableTwo: 'users-clicks',
@@ -59,7 +62,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
       dataIndex: 1,
       columns: [
         { data: 'userEmail' },
-        { data: 'count' }
+        { data: 'totalPageViews' }
       ],
       tableSelector: '.active-users-full-table-views',
       otherTableOne: 'users-sessions',
@@ -72,7 +75,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
       dataIndex: 2,
       columns: [
         { data: 'userEmail' },
-        { data: 'count' }
+        { data: 'totalEvents' }
       ],
       tableSelector: '.active-users-full-table-clicks',
       otherTableOne: 'users-sessions',
@@ -621,13 +624,13 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
 
         switch (value) {
           case 'users-sessions':
-            $(this).parents('.analytics-box').find('.analytics-row-wrapper-users').html(compiledActiveUserTemplate(pvDataArray.activeUserData[0]));
+            $(this).parents('.analytics-box').find('.analytics-row-wrapper-users').html(compiledActiveUserTemplate(pvDataArray.activeUserData.map(({ userEmail, uniqueSessions }) => ({ userEmail, count: uniqueSessions }))));
             break;
           case 'users-screen-views':
-            $(this).parents('.analytics-box').find('.analytics-row-wrapper-users').html(compiledActiveUserTemplate(pvDataArray.activeUserData[1]));
+            $(this).parents('.analytics-box').find('.analytics-row-wrapper-users').html(compiledActiveUserTemplate(pvDataArray.activeUserData.map(({ userEmail, totalPageViews }) => ({ userEmail, count: totalPageViews }))));
             break;
           case 'users-clicks':
-            $(this).parents('.analytics-box').find('.analytics-row-wrapper-users').html(compiledActiveUserTemplate(pvDataArray.activeUserData[2]));
+            $(this).parents('.analytics-box').find('.analytics-row-wrapper-users').html(compiledActiveUserTemplate(pvDataArray.activeUserData.map(({ userEmail, totalEvents }) => ({ userEmail, count: totalEvents }))));
             break;
           default:
             break;
@@ -916,13 +919,13 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
     // RENDER MOST ACTIVE USERS
     switch ($container.find('[name="users-selector"]:checked').val()) {
       case 'users-sessions':
-        $container.find('.analytics-row-wrapper-users').html(compiledActiveUserTemplate(pvDataArray.activeUserData[0]));
+        $container.find('.analytics-row-wrapper-users').html(compiledActiveUserTemplate(pvDataArray.activeUserData.map(({ userEmail, uniqueSessions }) => ({ userEmail, count: uniqueSessions }))));
         break;
       case 'users-screen-views':
-        $container.find('.analytics-row-wrapper-users').html(compiledActiveUserTemplate(pvDataArray.activeUserData[1]));
+        $container.find('.analytics-row-wrapper-users').html(compiledActiveUserTemplate(pvDataArray.activeUserData.map(({ userEmail, totalPageViews }) => ({ userEmail, count: totalPageViews }))));
         break;
       case 'users-clicks':
-        $container.find('.analytics-row-wrapper-users').html(compiledActiveUserTemplate(pvDataArray.activeUserData[2]));
+        $container.find('.analytics-row-wrapper-users').html(compiledActiveUserTemplate(pvDataArray.activeUserData.map(({ userEmail, totalEvents }) => ({ userEmail, count: totalEvents }))));
         break;
       default:
         break;
@@ -1380,42 +1383,20 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
     });
   }
 
-  function getActiveUserData(currentPeriodStartDate, currentPeriodEndDate, limit) {
-    var userTableSessions = Fliplet.App.Analytics.Aggregate.get({
+  async function getActiveUserData(currentPeriodStartDate, currentPeriodEndDate, limit) {
+    const userTableSessions = await Fliplet.App.Analytics.Aggregate.get({
       source: source,
       group: 'user',
-      sum: 'uniqueSessions',
-      order: [['count', 'DESC']],
+      sum: ["totalPageViews","totalEvents","uniqueSessions"],
+      order: [['uniqueSessions', 'DESC']],
       limit: limit,
       from: currentPeriodStartDate,
       to: currentPeriodEndDate
-    });
+    })
 
-    var userTableScreenViews = Fliplet.App.Analytics.Aggregate.get({
-      source: source,
-      group: 'user',
-      sum: 'totalPageViews',
-      order: [['count', 'DESC']],
-      limit: limit,
-      from: currentPeriodStartDate,
-      to: currentPeriodEndDate
-    });
+    setLoadingProgress(25);
 
-    var userTableInteractions = Fliplet.App.Analytics.Aggregate.get({
-      source: source,
-      group: 'user',
-      sum: 'totalEvents',
-      order: [['count', 'DESC']],
-      limit: limit,
-      from: currentPeriodStartDate,
-      to: currentPeriodEndDate
-    });
-
-    return Promise.all([userTableSessions, userTableScreenViews, userTableInteractions]).then(function(results) {
-      setLoadingProgress(25);
-
-      return results;
-    });
+    return userTableSessions;
   }
 
   function getPopularScreenData(currentPeriodStartDate, currentPeriodEndDate, limit) {
@@ -1742,6 +1723,9 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
     });
   }
 
+
+  const secondsToTime = (seconds) => moment.utc(seconds * 1000).format('HH:mm:ss');
+
   function renderDataTable(xhrOptions, context, column) {
     if (currentTable) {
       currentTable.destroy();
@@ -1768,7 +1752,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
 
         Fliplet.App.Analytics.Aggregate.get(query).then(function(results) {
           callback({
-            data: results.logs,
+            data: results.logs.map(entry => ({ ...entry, avgSessionDuration: secondsToTime(entry.avgSessionDuration) })),
             recordsTotal: results.count,
             recordsFiltered: results.count
           });
@@ -1802,25 +1786,12 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
     var xhrOptions =  {
       source: source,
       group: 'user',
-      order: [['count', 'DESC']],
+      order: [['uniqueSessions', 'DESC']],
+      sum: ["totalPageViews","totalEvents","totalSessionDuration","totalSessions","uniqueSessions"],
       from: analyticsStartDate,
       to: analyticsEndDate,
       includeCount: true
     };
-
-    switch (buttonSelected) {
-      case 'users-sessions':
-        xhrOptions.sum = 'uniqueSessions';
-        break;
-      case 'users-screen-views':
-        xhrOptions.sum = 'totalPageViews';
-        break;
-      case 'users-clicks':
-        xhrOptions.sum = 'totalEvents';
-        break;
-      default:
-        return;
-    }
 
     renderDataTable(xhrOptions, buttonSelected, 'userEmail');
   }
