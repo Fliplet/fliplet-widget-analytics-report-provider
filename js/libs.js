@@ -119,7 +119,19 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
       selectorsToHide: '.popular-sessions-full-table-views, .popular-sessions-full-table-sessions',
       selectorsToShow: '.popular-sessions-full-table-clicks',
       order: [[1, 'desc']]
-    }
+    },
+    'technology-report': {
+      dataIndex: 1,
+      columns: [
+        { data: 'os' },
+        { data: 'browserType' },
+        { data: 'totalDevices' },
+        { data: 'newDevices' },
+        { data: 'totalSessions' },
+      ],
+      tableSelector: '.technology-report-table',
+      order: [[3, 'desc']]
+    },
   };
 
   var chartContainer = $container.find('.chart-holder')[0];
@@ -820,7 +832,8 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
       getMetricsData(analyticsStartDate, analyticsEndDate, analyticsPrevStartDate, context),
       getTimelineData(analyticsStartDate, analyticsEndDate, analyticsPrevStartDate, context),
       getActiveUserData(analyticsStartDate, analyticsEndDate, limit),
-      getPopularScreenData(analyticsStartDate, analyticsEndDate, limit)
+      getPopularScreenData(analyticsStartDate, analyticsEndDate, limit),
+      getTechnologyReportData(analyticsStartDate, analyticsEndDate)
     ]).then(function(data) {
       var periodDurationInMs = moment.duration(moment(analyticsEndDate).diff(moment(analyticsStartDate))).add(context !== 'hour' ? 1 : 0, context).asMilliseconds();
 
@@ -839,6 +852,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
       timelineData: data[1],
       activeUserData: data[2],
       popularScreenData: data[3],
+      technologyReportData: data[4],
       context: context,
       periodInMs: periodInMs,
       data: data
@@ -942,6 +956,10 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
       default:
         break;
     }
+
+    // RENDER TECHNOLOGY STATS
+    const technologyStatsWrapper = document.querySelector('.analytics-row-wrapper-technology');
+    renderTechnologyStats(pvDataArray.technologyReportData, technologyStatsWrapper);
 
     // MUTATE TIMELINE DATA
     // Active devices
@@ -1270,7 +1288,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
     }
 
     return Promise.all([metricDevices, metricNewDevices, metricSessions, metricScreenViews, metricInteractions]).then(function(results) {
-      setLoadingProgress(25);
+      setLoadingProgress(20);
 
       return results;
     });
@@ -1374,7 +1392,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
     });
 
     return Promise.all([timelineDevices, timelineSessions, timelineScreenViews, timelineInteractions]).then(function(results) {
-      setLoadingProgress(25);
+      setLoadingProgress(20);
 
       return results;
     });
@@ -1412,7 +1430,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
     });
 
     return Promise.all([userTableSessions, userTableScreenViews, userTableInteractions]).then(function(results) {
-      setLoadingProgress(25);
+      setLoadingProgress(20);
 
       return results;
     });
@@ -1450,10 +1468,23 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
     });
 
     return Promise.all([screenTableScreenViews, screenTableSessions, screenTableScreenInteractions]).then(function(results) {
-      setLoadingProgress(25);
+      setLoadingProgress(20);
 
       return results;
     });
+  }
+
+  async function getTechnologyReportData(currentPeriodStartDate, currentPeriodEndDate) {
+    const results = await Fliplet.App.Analytics.Aggregate.get({
+      source: source,
+      group: 'os',
+      from: currentPeriodStartDate,
+      to: currentPeriodEndDate,
+    });
+
+    setLoadingProgress(20);
+
+    return results;
   }
 
   function loadUserActionsData(limit, offset, searchClause, orderArray) {
