@@ -1361,29 +1361,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
   }
 
   async function getTechnologyReportData(currentPeriodStartDate, currentPeriodEndDate) {
-    const mockData = [
-      {
-        "appId":"54",	
-        "day":"2024-05-01",
-        "os": "iOS",
-        "browserType": "",
-        "totalDevices": "100",
-        "newDevices": "25",
-        "totalSessions": "34"    
-      },
-      {
-        "appId":"54",	
-        "day":"2024-05-01",
-        "os": "Windows",
-        "browserType": "Chrome",
-        "totalDevices": "37",
-        "newDevices": "12",
-        "totalSessions": "20"    
-      }
-    ];
-    
-
-    const results = mockData || await Fliplet.App.Analytics.Aggregate.get({
+    const results = await Fliplet.App.Analytics.Aggregate.get({
       source: source,
       group: 'os',
       from: currentPeriodStartDate,
@@ -1706,31 +1684,10 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
         }
 
         Fliplet.App.Analytics.Aggregate.get(query).then(function(results) {
-         const mock = [
-            {
-              "appId":"54",	
-              "day":"2024-05-01",
-              "os": "iOS",
-              "browserType": "",
-              "totalDevices": "100",
-              "newDevices": "25",
-              "totalSessions": "34"    
-            },
-            {
-              "appId":"54",	
-              "day":"2024-05-01",
-              "os": "Windows",
-              "browserType": "Chrome",
-              "totalDevices": "37",
-              "newDevices": "12",
-              "totalSessions": "20"    
-            }
-          ];
-
           callback({
-            data: mock || results.logs,
-            recordsTotal: mock.count || results.count,
-            recordsFiltered:  mock.count || results.count
+            data: results.logs,
+            recordsTotal: results.count,
+            recordsFiltered: results.count
           });
         });
       },
