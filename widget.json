@@ -29,6 +29,7 @@
       "vendor/buttons.html5.min.js",
       "vendor/buttons.flash.min.js",
       "vendor/jszip.min.js",
+      "js/view.js",
       "js/interface.templates.js",
       "js/libs.js",
       "css/interface.css",

@@ -121,7 +121,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
       order: [[1, 'desc']]
     },
     'technology-report': {
-      dataIndex: 1,
+      dataIndex: 0,
       columns: [
         { data: 'os' },
         { data: 'browserType' },
@@ -570,6 +570,22 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
 
         getMorePopularScreens();
       })
+      .on('click', '.more-technology-stats', function() {
+        $container.find('.technology-report-overlay').addClass('active');
+        $body.addClass('freeze');
+
+        // GA Track event
+        Fliplet.Studio.emit('track-event', {
+          category: 'app_analytics',
+          action: 'see_more_about_technology_stats'
+        });
+
+        Fliplet.Studio.emit('overlay-scroll-top', {
+          name: 'app-analytics'
+        });
+
+        getMoreTechnologyStats();
+      })
       .on('click', '.actions-by-screen', function() {
         $container.find('.actions-per-screen-overlay').addClass('active');
         $body.addClass('freeze');
@@ -755,7 +771,8 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
           getMetricsData(analyticsStartDate, analyticsEndDate, analyticsPrevStartDate, context || 'day'),
           getTimelineData(analyticsStartDate, analyticsEndDate, analyticsPrevStartDate, context || 'day'),
           getActiveUserData(analyticsStartDate, analyticsEndDate, 5),
-          getPopularScreenData(analyticsStartDate, analyticsEndDate, 5)
+          getPopularScreenData(analyticsStartDate, analyticsEndDate, 5),
+          getTechnologyReportData(analyticsStartDate, analyticsEndDate)
         ]).then(function(data) {
           var periodDurationInMs = moment.duration(moment(analyticsEndDate).diff(moment(analyticsStartDate))).add(context !== 'hour' ? 1 : 0, context || 'day').asMilliseconds();
 
@@ -1124,174 +1141,43 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
   }
 
   function getMetricsData(currentPeriodStartDate, currentPeriodEndDate, priorPeriodStartDate, groupBy) {
-    var periodDuration = moment.duration(moment(currentPeriodEndDate).diff(moment(currentPeriodStartDate))).add(groupBy !== 'hour' ? 1 : 0, groupBy);
-    var previousPeriodNewUsers;
-    var currentPeriodNewUsers;
-    var previousPeriodUsers;
-    var currentPeriodUsers;
-
-    // get active devices
-    var metricDevices = Fliplet.App.Analytics.Aggregate.count({
-      source: source,
-      column: 'uniqueDevices',
-      from: priorPeriodStartDate,
-      to: moment(currentPeriodStartDate).subtract(1, 'ms').format('YYYY-MM-DD')
-    }).then(function(previousPeriod) {
-      previousPeriodUsers = previousPeriod;
-
-      // 2. get devices up to end of previous period
-      return Fliplet.App.Analytics.Aggregate.count({
-        source: source,
-        column: 'uniqueDevices',
-        from: currentPeriodStartDate,
-        to: currentPeriodEndDate
-      }).then(function(currentPeriod) {
-        currentPeriodUsers = currentPeriod;
-
-        return;
-      });
-    }).then(function() {
-      return {
-        metricActiveDevicesPrior: previousPeriodUsers,
-        metricActiveDevices: currentPeriodUsers
-      };
-    });
-
-    // Get new devices up to start of previous period
-    var metricNewDevices = Fliplet.App.Analytics.Aggregate.count({
-      source: source,
-      column: 'uniqueDevices',
-      to: moment(priorPeriodStartDate).subtract(1, 'ms').format('YYYY-MM-DD')
-    }).then(function(countUpToStartOfPriorPeriod) {
-      // 2. get devices up to end of previous period
-      return Fliplet.App.Analytics.Aggregate.count({
-        source: source,
-        column: 'uniqueDevices',
-        to: moment(currentPeriodStartDate).subtract(1, 'ms').format('YYYY-MM-DD')
-      }).then(function(countUpToStartOfCurrentPeriod) {
-        previousPeriodNewUsers = countUpToStartOfCurrentPeriod - countUpToStartOfPriorPeriod;
-
-        // 3. get all time total count
-        return Fliplet.App.Analytics.Aggregate.count({
-          source: source,
-          column: 'uniqueDevices',
-          to: currentPeriodEndDate
-        }).then(function(countUpToEndOfCurrentPeriod) {
-          currentPeriodNewUsers = countUpToEndOfCurrentPeriod - countUpToStartOfCurrentPeriod;
-        });
-      });
-    }).then(function() {
-      return {
-        metricNewDevicesPrior: previousPeriodNewUsers,
-        metricNewDevices: currentPeriodNewUsers
-      };
-    });
-
-    var metricSessions;
-    var metricScreenViews;
-    var metricInteractions;
-
-    if (groupBy === 'hour') {
-      metricSessions = Fliplet.App.Analytics.get({
-        source: source,
-        group: [{ fn: 'date_trunc', part: groupBy, col: 'createdAt', as: groupBy }],
-        attributes: [{ distinctCount: true, col: 'data._analyticsSessionId', as: 'sessionsCount' }],
-        where: {
-          data: { _analyticsSessionId: { $ne: null } },
-          createdAt: {
-            $gte: moment(priorPeriodStartDate).valueOf(),
-            $lte: moment(currentPeriodEndDate).valueOf()
-          }
+   return [
+    {
+      "periodStart": "2023-12-17",
+      "periodEnd": "2023-12-19",
+      "data": [
+        {
+          "day": "2023-12-18",
+          "totalDevices": "12",
+          "uniqueDevices": "1",
+          "totalSessions": "12",
+          "uniqueSessions": "1",
+          "uniqueUsers": "4",
+          "totalPageViews": "9",
+          "totalEvents": "3",
+     "totalSessionDuration": "230",
+          "videoCallMinutes": null,
+          "sentEmails": 0,
+          "sentSMS": 0,
+          "sentPushNotifications": 0,
+          "devices": [
+            "370f8130"
+          ]
         },
-        period: {
-          duration: periodDuration.asMilliseconds(),
-          col: groupBy,
-          count: 'sessionsCount'
+        {
+          "day": "2023-12-17",
+          "totalDevices": "0",
+          "totalEvents": "0",
+          "totalPageViews": "0",
+          "totalSessions": "0",
+     "totalSessionDuration": "0",
+          "uniqueDevices": "0",
+          "uniqueSessions": "0"
         }
-      }).then(function(results) {
-        return results.logs;
-      });
-
-      // Get count of screen views
-      metricScreenViews = Fliplet.App.Analytics.get({
-        source: source,
-        group: [{ fn: 'date_trunc', part: groupBy, col: 'createdAt', as: groupBy }],
-        where: {
-          type: 'app.analytics.pageView',
-          createdAt: {
-            $gte: moment(priorPeriodStartDate).valueOf(),
-            $lte: moment(currentPeriodEndDate).valueOf()
-          }
-        },
-        period: {
-          duration: periodDuration.asMilliseconds(),
-          col: groupBy,
-          count: true
-        }
-      }).then(function(results) {
-        return results.logs;
-      });
-
-      // Get count of interactions
-      metricInteractions = Fliplet.App.Analytics.get({
-        source: source,
-        group: [{ fn: 'date_trunc', part: groupBy, col: 'createdAt', as: groupBy }],
-        where: {
-          type: 'app.analytics.event',
-          data: {
-            nonInteraction: null
-          },
-          createdAt: {
-            $gte: moment(priorPeriodStartDate).valueOf(),
-            $lte: moment(currentPeriodEndDate).valueOf()
-          }
-        },
-        period: {
-          duration: periodDuration.asMilliseconds(),
-          col: groupBy,
-          count: true
-        }
-      }).then(function(results) {
-        return results.logs;
-      });
-    } else {
-      metricSessions = Fliplet.App.Analytics.Aggregate.get({
-        source: source,
-        period: Math.round(periodDuration.asDays()),
-        from: priorPeriodStartDate,
-        to: currentPeriodEndDate,
-        sum: 'uniqueSessions'
-      }).then(function(results) {
-        return normalizeAggregatedData(results, 'uniqueSessions');
-      });
-
-      metricScreenViews = Fliplet.App.Analytics.Aggregate.get({
-        source: source,
-        period: Math.round(periodDuration.asDays()),
-        from: priorPeriodStartDate,
-        to: currentPeriodEndDate,
-        sum: 'totalPageViews'
-      }).then(function(results) {
-        return normalizeAggregatedData(results, 'totalPageViews');
-      });
-
-
-      metricInteractions = Fliplet.App.Analytics.Aggregate.get({
-        source: source,
-        period: Math.round(periodDuration.asDays()),
-        from: priorPeriodStartDate,
-        to: currentPeriodEndDate,
-        sum: 'totalEvents'
-      }).then(function(results) {
-        return normalizeAggregatedData(results, 'totalEvents');
-      });
+      ]
     }
-
-    return Promise.all([metricDevices, metricNewDevices, metricSessions, metricScreenViews, metricInteractions]).then(function(results) {
-      setLoadingProgress(20);
-
-      return results;
-    });
+  ]
+  
   }
 
   function getTimelineData(currentPeriodStartDate, currentPeriodEndDate, priorPeriodStartDate, groupBy) {
@@ -1475,7 +1361,29 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
   }
 
   async function getTechnologyReportData(currentPeriodStartDate, currentPeriodEndDate) {
-    const results = await Fliplet.App.Analytics.Aggregate.get({
+    const mockData = [
+      {
+        "appId":"54",	
+        "day":"2024-05-01",
+        "os": "iOS",
+        "browserType": "",
+        "totalDevices": "100",
+        "newDevices": "25",
+        "totalSessions": "34"    
+      },
+      {
+        "appId":"54",	
+        "day":"2024-05-01",
+        "os": "Windows",
+        "browserType": "Chrome",
+        "totalDevices": "37",
+        "newDevices": "12",
+        "totalSessions": "20"    
+      }
+    ];
+    
+
+    const results = mockData || await Fliplet.App.Analytics.Aggregate.get({
       source: source,
       group: 'os',
       from: currentPeriodStartDate,
@@ -1798,10 +1706,31 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
         }
 
         Fliplet.App.Analytics.Aggregate.get(query).then(function(results) {
+         const mock = [
+            {
+              "appId":"54",	
+              "day":"2024-05-01",
+              "os": "iOS",
+              "browserType": "",
+              "totalDevices": "100",
+              "newDevices": "25",
+              "totalSessions": "34"    
+            },
+            {
+              "appId":"54",	
+              "day":"2024-05-01",
+              "os": "Windows",
+              "browserType": "Chrome",
+              "totalDevices": "37",
+              "newDevices": "12",
+              "totalSessions": "20"    
+            }
+          ];
+
           callback({
-            data: results.logs,
-            recordsTotal: results.count,
-            recordsFiltered: results.count
+            data: mock || results.logs,
+            recordsTotal: mock.count || results.count,
+            recordsFiltered:  mock.count || results.count
           });
         });
       },
@@ -1882,6 +1811,17 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
     }
 
     renderDataTable(xhrOptions, buttonSelected, 'pageTitle');
+  }
+
+  function getMoreTechnologyStats() {
+    const xhrOptions =  {
+      source: source,
+      group: 'os',
+      from: analyticsStartDate,
+      to: analyticsEndDate,
+    };
+    
+    renderDataTable(xhrOptions, 'technology-report', 'os');
   }
 
   function start() {
