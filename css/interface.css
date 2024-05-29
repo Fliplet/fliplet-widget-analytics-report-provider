@@ -227,14 +227,16 @@ span.analytics-box-number-prior {
   opacity: 0.6;
 }
 
-.analytics-title-metric {
+.analytics-title-metric,
+.technology-stats-title div:first-child {
   width: 50%;
   line-height: 1.2;
   padding-bottom: 6px;
 }
 
 .analytics-title-select-period,
-.analytics-title-prior-period {
+.analytics-title-prior-period,
+.technology-stats-title div:not(:first-child) {
   width: 25%;
   text-align: center;
   padding: 0 10px;
