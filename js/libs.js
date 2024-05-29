@@ -123,7 +123,19 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
       selectorsToHide: '.popular-sessions-full-table-views, .popular-sessions-full-table-sessions',
       selectorsToShow: '.popular-sessions-full-table-clicks',
       order: [[1, 'desc']]
-    }
+    },
+    'technology-report': {
+      dataIndex: 0,
+      columns: [
+        { data: 'os' },
+        { data: 'browserType' },
+        { data: 'totalDevices' },
+        { data: 'newDevices' },
+        { data: 'totalSessions' },
+      ],
+      tableSelector: '.technology-report-table',
+      order: [[3, 'desc']]
+    },
   };
 
   var chartContainer = $container.find('.chart-holder')[0];
@@ -279,7 +291,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
   };
 
   function startLoading() {
-    setLoadingProgress();
+    setLoadingProgress({ reset: true });
     $('.widget-holder').addClass('is-loading');
   }
 
@@ -291,11 +303,13 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
 
   var progress = 0;
 
-  function setLoadingProgress(progressUpdate) {
-    if (!progressUpdate) {
+  function setLoadingProgress({ reset }) {
+    const steps = 6;
+
+    if (reset) {
       progress = 0;
     } else {
-      progress += progressUpdate;
+      progress += 100/steps;
 
       if (progress > 100) {
         progress = 100;
@@ -562,6 +576,22 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
 
         getMorePopularScreens();
       })
+      .on('click', '.more-technology-stats', function() {
+        $container.find('.technology-report-overlay').addClass('active');
+        $body.addClass('freeze');
+
+        // GA Track event
+        Fliplet.Studio.emit('track-event', {
+          category: 'app_analytics',
+          action: 'see_more_about_technology_stats'
+        });
+
+        Fliplet.Studio.emit('overlay-scroll-top', {
+          name: 'app-analytics'
+        });
+
+        getMoreTechnologyStats();
+      })
       .on('click', '.actions-by-screen', function() {
         $container.find('.actions-per-screen-overlay').addClass('active');
         $body.addClass('freeze');
@@ -811,7 +841,8 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
       getTimelineData(analyticsStartDate, analyticsEndDate, analyticsPrevStartDate, context),
       getActiveUserData(analyticsStartDate, analyticsEndDate, limit),
       getPopularScreenData(analyticsStartDate, analyticsEndDate, limit),
-      getCommunicationData(analyticsStartDate, analyticsEndDate)
+      getCommunicationData(analyticsStartDate, analyticsEndDate),
+      getTechnologyReportData(analyticsStartDate, analyticsEndDate)
     ]).then(function(data) {
       var periodDurationInMs = moment.duration(moment(analyticsEndDate).diff(moment(analyticsStartDate))).add(context !== 'hour' ? 1 : 0, context).asMilliseconds();
 
@@ -831,6 +862,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
       activeUserData: data[2],
       popularScreenData: data[3],
       communicationData: data[4],
+      technologyReportData: data[5],
       context: context,
       periodInMs: periodInMs,
       data: data
@@ -892,6 +924,10 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
       default:
         break;
     }
+
+    // RENDER TECHNOLOGY STATS
+    const technologyStatsWrapper = document.querySelector('.analytics-row-wrapper-technology');
+    renderTechnologyStats(pvDataArray.technologyReportData, technologyStatsWrapper);
 
     // MUTATE TIMELINE DATA
     // Active devices
@@ -1070,7 +1106,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
     
     const { 0: { data: prior } = {}, 1: { data: current } = {} } = response.logs || response || [{}, {}];
 
-    setLoadingProgress(25);
+    setLoadingProgress();
 
     const activeDevices = [sumBy('totalDevices')(prior), sumBy('totalDevices')(current)];
     const newDevices = [sumBy('uniqueDevices')(prior), sumBy('uniqueDevices')(current)];
@@ -1106,6 +1142,8 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
     });
 
     const { 0: { sentEmails, sentSMS, sentPushNotifications } } = logs || [{ sentEmails: 0, sentSMS: 0, sentPushNotifications: 0 }];
+
+    setLoadingProgress();
 
     return {
       sentEmails,
@@ -1212,7 +1250,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
     });
 
     return Promise.all([timelineDevices, timelineSessions, timelineScreenViews, timelineInteractions]).then(function(results) {
-      setLoadingProgress(25);
+      setLoadingProgress();
 
       return results;
     });
@@ -1229,7 +1267,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
       to: currentPeriodEndDate
     })
 
-    setLoadingProgress(25);
+    setLoadingProgress();
 
     return userTableSessions;
   }
@@ -1266,10 +1304,23 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
     });
 
     return Promise.all([screenTableScreenViews, screenTableSessions, screenTableScreenInteractions]).then(function(results) {
-      setLoadingProgress(25);
+      setLoadingProgress();
 
       return results;
     });
+  }
+
+  async function getTechnologyReportData(currentPeriodStartDate, currentPeriodEndDate) {
+    const results = await Fliplet.App.Analytics.Aggregate.get({
+      source: source,
+      group: 'os',
+      from: currentPeriodStartDate,
+      to: currentPeriodEndDate,
+    });
+
+    setLoadingProgress();
+
+    return results;
   }
 
   function loadUserActionsData(limit, offset, searchClause, orderArray) {
@@ -1688,7 +1739,18 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
     renderDataTable(xhrOptions, buttonSelected, 'pageTitle');
   }
 
- async function exportTableData() {
+  function getMoreTechnologyStats() {
+    const xhrOptions =  {
+      source: source,
+      group: 'os',
+      from: analyticsStartDate,
+      to: analyticsEndDate,
+    };
+    
+    renderDataTable(xhrOptions, 'technology-report', 'os');
+  }
+
+  async function exportTableData() {
     const { context, xhrOptions, type } = currentTableOptions;
     const appName = Fliplet.Env.get('appName');
     
