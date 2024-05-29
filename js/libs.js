@@ -34,6 +34,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
   var compiledAppMetricsTemplate = Handlebars.compile(Fliplet.Widget.Templates['templates.interface.app-metrics']());
   var compiledActiveUserTemplate = Handlebars.compile(Fliplet.Widget.Templates['templates.interface.active-user']());
   var compiledPopularScreenTemplate = Handlebars.compile(Fliplet.Widget.Templates['templates.interface.popular-screen']());
+  var compiledCommunicationTemplate = Handlebars.compile(Fliplet.Widget.Templates['templates.interface.communication']());
 
   var configuration = data;
   var $container = $(element);
@@ -820,7 +821,8 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
       getMetricsData(analyticsStartDate, analyticsEndDate, analyticsPrevStartDate, context),
       getTimelineData(analyticsStartDate, analyticsEndDate, analyticsPrevStartDate, context),
       getActiveUserData(analyticsStartDate, analyticsEndDate, limit),
-      getPopularScreenData(analyticsStartDate, analyticsEndDate, limit)
+      getPopularScreenData(analyticsStartDate, analyticsEndDate, limit),
+      getCommunicationData(analyticsStartDate, analyticsEndDate)
     ]).then(function(data) {
       var periodDurationInMs = moment.duration(moment(analyticsEndDate).diff(moment(analyticsStartDate))).add(context !== 'hour' ? 1 : 0, context).asMilliseconds();
 
@@ -839,6 +841,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
       timelineData: data[1],
       activeUserData: data[2],
       popularScreenData: data[3],
+      communicationData: data[4],
       context: context,
       periodInMs: periodInMs,
       data: data
@@ -912,6 +915,21 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
       appMetricsArrayData.push(newObj);
     });
     $container.find('.analytics-row-wrapper-metrics').html(compiledAppMetricsTemplate(appMetricsArrayData));
+
+    // RENDER COMMUNICATION DATA
+    const communicationTitles = {
+      sentPushNotifications: 'Notifications',
+      sentEmails: 'Email',
+      sentSMS: 'SMS'
+    };
+
+    const communicationData = Object.entries(communicationTitles).map(([key, Title]) => ({
+      Title,
+      count: pvDataArray.communicationData?.[key] || 0,
+    }));
+
+    $container.find('#communication-data').html(compiledCommunicationTemplate(communicationData));
+   
 
     // RENDER MOST ACTIVE USERS
     switch ($container.find('[name="users-selector"]:checked').val()) {
@@ -1275,6 +1293,27 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
       return results;
     });
   }
+
+  async function getCommunicationData(currentPeriodStartDate, currentPeriodEndDate ) {
+    const { logs } = await Fliplet.App.Analytics.Aggregate.get({
+      source,
+      from: currentPeriodStartDate,
+      to: currentPeriodEndDate,
+      includeCount: true,
+      group: 'app',
+      sum: ['sentEmails', 'sentPushNotifications', 'sentSMS'],
+      limit: 10,
+      offset: 0,
+    });
+
+    const { 0: { sentEmails, sentSMS, sentPushNotifications } } = logs || [{ sentEmails: 0, sentSMS: 0, sentPushNotifications: 0 }];
+
+    return {
+      sentEmails,
+      sentSMS,
+      sentPushNotifications
+    }
+  } 
 
   function getTimelineData(currentPeriodStartDate, currentPeriodEndDate, priorPeriodStartDate, groupBy) {
     var periodDuration = moment.duration(moment(currentPeriodEndDate).diff(moment(currentPeriodStartDate))).add(groupBy !== 'hour' ? 1 : 0, groupBy);
