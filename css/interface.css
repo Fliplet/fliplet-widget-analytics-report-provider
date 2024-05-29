@@ -301,6 +301,7 @@ span.analytics-box-number-prior {
 
 .full-screen-overlay-header .header-controls {
   display: flex;
+  width: 100%;
   align-items: center;
 }
 
@@ -623,4 +624,8 @@ span.analytics-box-number-prior {
 .is-loading .app-analytics-container {
   opacity: 0;
   pointer-events: none;
+}
+
+.btn-round {
+  border-radius: 25px;
 }

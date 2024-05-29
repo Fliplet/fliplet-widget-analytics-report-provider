@@ -27,6 +27,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
   var cachedUserActionData = { data: [] };
   var cachedScreenActionData = { data: [] };
   var currentTable;
+  var currentTableOptions;
 
   var actionsPerUserTable;
   var actionsPerScreenTable;
@@ -1608,12 +1609,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
           { data: 'Count', key: 'data.count' }
         ],
         dom: 'Blfrtip',
-        buttons: [
-          {
-            extend: 'excel',
-            text: 'EXPORT TO EXCEL'
-          }
-        ],
+        buttons: [],
         lengthMenu: [10, 25, 50, 100, 500],
         scrollY: 400,
         scrollCollapse: true,
@@ -1634,6 +1630,31 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
       });
       renderColumnFilters(actionsPerUserTable);
     }
+
+    currentTableOptions = {
+      xhrOptions: {
+        source: source,
+        where: {
+          createdAt: {
+            $gte: moment(analyticsStartDate).valueOf(),
+            $lte: moment(analyticsEndDate).valueOf()
+          },
+          $or: [
+            {
+              type: 'app.analytics.event'
+            },
+            {
+              type: 'app.analytics.pageView'
+            }
+          ]
+        },
+        group: [
+          'data._userEmail', 'data._pageTitle', 'data.category', 'data.action', 'data.label', 'type'
+        ]
+      },
+      context: 'actions-per-user',
+      type: 'logs'
+    };
   }
 
   function loadScreenActionsData(limit, offset, searchClause, orderArray) {
@@ -1732,12 +1753,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
           { data: 'Count', key: 'data.count' }
         ],
         dom: 'Blfrtip',
-        buttons: [
-          {
-            extend: 'excel',
-            text: 'EXPORT TO EXCEL'
-          }
-        ],
+        buttons: [],
         lengthMenu: [10, 25, 50, 100, 500],
         scrollY: 400,
         scrollCollapse: true,
@@ -1757,6 +1773,24 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
         Fliplet.Widget.autosize(height);
       });
       renderColumnFilters(actionsPerScreenTable);
+    }
+
+    currentTableOptions = {
+      xhrOptions: {
+        source: source,
+        group: [
+          'data._pageTitle', 'data.category', 'data.action', 'data.label', 'type'
+        ],
+        where: {
+          createdAt: {
+            $gte: moment(analyticsStartDate).valueOf(),
+            $lte: moment(analyticsEndDate).valueOf()
+          },
+          type: 'app.analytics.event'
+        }
+      },
+      context: 'actions-per-screen',
+      type: 'logs',
     }
   }
 
@@ -1814,12 +1848,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
         });
       },
       dom: 'Blfrtip',
-      buttons: [
-        {
-          extend: 'excel',
-          text: 'EXPORT TO EXCEL'
-        }
-      ],
+      buttons: [],
       lengthMenu: [10, 25, 50, 100, 500],
       scrollY: 400,
       scrollCollapse: true,
@@ -1834,6 +1863,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
     });
 
     currentTable = $(options.tableSelector).DataTable(options);
+    currentTableOptions = {xhrOptions, context, type: 'aggregate' };
   }
 
   function getMoreActiveUsers() {
@@ -1891,6 +1921,38 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
 
     renderDataTable(xhrOptions, buttonSelected, 'pageTitle');
   }
+
+ async function exportTableData() {
+    const { context, xhrOptions, type } = currentTableOptions;
+    const appName = Fliplet.Env.get('appName');
+    
+    const fetchingFunction = {
+      'aggregate': Fliplet.App.Analytics.Aggregate.get,
+      'logs': Fliplet.App.Analytics.get
+    }[type];
+  
+    try {
+      const data = await fetchingFunction({...xhrOptions, limit: false, format: 'csv'}).catch(function(error) {
+        console.error('Error fetching table data', error);
+      });
+
+      const blob = new Blob([data], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+
+      a.download = `${appName} - Analytics export - ${context} - ${analyticsStartDate}-${analyticsEndDate}.csv`;
+      a.href = url;
+
+      a.click();
+
+      window.URL.revokeObjectURL(url);
+    }
+    catch (error) {
+      console.error('Error exporting table data', error);
+    }
+  }
+  
+  document.querySelectorAll('.export-table-data').forEach(node => node.addEventListener('click', exportTableData));
 
   function start() {
     var dateSelectModeDefault = dateSelectMode || 'last-7-days';
