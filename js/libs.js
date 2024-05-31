@@ -303,7 +303,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
 
   var progress = 0;
 
-  function setLoadingProgress({ reset }) {
+  function setLoadingProgress({ reset } = { reset: true }) {
     const steps = 6;
 
     if (reset) {
@@ -1141,7 +1141,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
       offset: 0,
     });
 
-    const { 0: { sentEmails, sentSMS, sentPushNotifications } } = logs || [{ sentEmails: 0, sentSMS: 0, sentPushNotifications: 0 }];
+    const { sentEmails, sentSMS, sentPushNotifications } = logs?.[0] || { sentEmails: 0, sentSMS: 0, sentPushNotifications: 0 };
 
     setLoadingProgress();
 
