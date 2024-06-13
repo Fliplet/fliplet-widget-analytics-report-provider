@@ -303,7 +303,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
 
   var progress = 0;
 
-  function setLoadingProgress({ reset } = { reset: true }) {
+  function setLoadingProgress({ reset } = {}) {
     const steps = 6;
 
     if (reset) {
@@ -1370,6 +1370,10 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
       });
   }
 
+  function toggleExportToCsvButton(enabled) {
+    document.querySelectorAll('.export-table-data').forEach(node => node.classList.toggle('disabled', !enabled));
+  }
+
   function renderUserActionsDatatable() {
     if (actionsPerUserTable) {
       actionsPerUserTable.clear();
@@ -1419,6 +1423,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
           });
 
           loadUserActionsData(data.length, data.start, searchClause, orderArray).then(function(paginatedData) {
+            toggleExportToCsvButton(!!paginatedData.count);
             callback({
               data: paginatedData.data,
               recordsTotal: paginatedData.count,
@@ -1565,6 +1570,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
           });
 
           loadScreenActionsData(data.length, data.start, searchClause, orderArray).then(function(paginatedData) {
+            toggleExportToCsvButton(!!paginatedData.count);
             callback({
               data: paginatedData.data,
               recordsTotal: paginatedData.count,
@@ -1670,6 +1676,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
         }
 
         Fliplet.App.Analytics.Aggregate.get(query).then(function(results) {
+          toggleExportToCsvButton(!!results.count);
           callback({
             data: results.logs.map(entry => ({ ...entry, ...(entry.avgSessionDuration ? { avgSessionDuration: secondsToTime(entry.avgSessionDuration)} : {}) })),
             recordsTotal: results.count,
