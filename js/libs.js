@@ -49,9 +49,9 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
       columns: [
         { data: 'userEmail' },
         { data: 'uniqueSessions' },
-        { data: 'avgScreenPerSession' },
-        { data: 'avgInteractionPerSession' },
-        { data: 'avgSessionDuration' }
+        { data: 'avgScreenPerSession', orderable: false  },
+        { data: 'avgInteractionPerSession', orderable: false  },
+        { data: 'avgSessionDuration', orderable: false }
       ],
       otherTableOne: 'users-screen-views',
       otherTableTwo: 'users-clicks',
@@ -128,7 +128,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
       dataIndex: 0,
       columns: [
         { data: 'os' },
-        { data: 'browserType' },
+        { data: 'browser' },
         { data: 'totalDevices' },
         { data: 'newDevices' },
         { data: 'totalSessions' },
@@ -1261,7 +1261,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
       source: source,
       group: 'user',
       sum: ["totalPageViews","totalEvents","uniqueSessions"],
-      order: [['uniqueSessions', 'DESC']],
+      order: [['totalPageViews', 'DESC']],
       limit: limit,
       from: currentPeriodStartDate,
       to: currentPeriodEndDate
@@ -1671,7 +1671,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
 
         Fliplet.App.Analytics.Aggregate.get(query).then(function(results) {
           callback({
-            data: results.logs.map(entry => ({ ...entry, avgSessionDuration: secondsToTime(entry.avgSessionDuration) })),
+            data: results.logs.map(entry => ({ ...entry, ...(entry.avgSessionDuration ? { avgSessionDuration: secondsToTime(entry.avgSessionDuration)} : {}) })),
             recordsTotal: results.count,
             recordsFiltered: results.count
           });
@@ -1745,6 +1745,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
       group: 'os',
       from: analyticsStartDate,
       to: analyticsEndDate,
+      includeCount: true
     };
     
     renderDataTable(xhrOptions, 'technology-report', 'os');
@@ -1760,7 +1761,11 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
     }[type];
   
     try {
-      const data = await fetchingFunction({...xhrOptions, limit: false, format: 'csv'}).catch(function(error) {
+      const data = await fetchingFunction({...xhrOptions, limit: false, format: 'csv'}, { processData: false}).catch(function(error) {
+        // parsererror is returned when the response is not a valid JSON, and it's expected for CSV responses
+        if (error.statusText === 'parsererror') {
+          return error.responseText;
+        }
         console.error('Error fetching table data', error);
       });
 
