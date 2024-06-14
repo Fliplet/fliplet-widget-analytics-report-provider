@@ -69,21 +69,26 @@ body {
 
 .analytics-box-holder {
   column-count: 2;
-  column-gap: 0;
-  margin-left: -10px;
-  margin-right: -10px;
+  column-gap: 20px;
 }
 
 .analytics-box-holder .analytics-box-container {
   width: 100%;
-  padding: 0 10px;
   display: inline-block;
 }
 
-.analytics-box {
-  background-color: #f4f2f7;
-  padding: 10px;
+.analytics-box-container  {
   margin-bottom: 20px;
+  background-color: #f4f2f7;
+  padding: 0 10px;
+}
+
+.analytics-box {
+  padding: 10px 0;
+}
+
+.analytics-box-container hr {
+  margin: 10px 0;
 }
 
 .timeframe-text,
@@ -192,6 +197,12 @@ span.analytics-box-number-prior {
   border-radius: 50%;
   margin: 5px 10px 5px 0;
   overflow: hidden;
+}
+
+.analytics-title-total {
+  width: 80px;
+  margin-left: auto;
+  text-align: center;
 }
 
 .analytics-row-name {
