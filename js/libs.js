@@ -1675,6 +1675,8 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
           query.where[column] = { $iLike: '%' + data.search.value + '%' };
         }
 
+        currentTableOptions = { xhrOptions: query, context, type: 'aggregate' };
+
         Fliplet.App.Analytics.Aggregate.get(query).then(function(results) {
           toggleExportToCsvButton(!!results.count);
           callback({
@@ -1700,7 +1702,6 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
     });
 
     currentTable = $(options.tableSelector).DataTable(options);
-    currentTableOptions = {xhrOptions, context, type: 'aggregate' };
   }
 
   function getMoreActiveUsers() {
@@ -1768,7 +1769,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
     }[type];
   
     try {
-      const data = await fetchingFunction({...xhrOptions, limit: false, format: 'csv'}, { processData: false}).catch(function(error) {
+      const data = await fetchingFunction({...xhrOptions, limit: false, offset: 0, format: 'csv'}, { processData: false}).catch(function(error) {
         // parsererror is returned when the response is not a valid JSON, and it's expected for CSV responses
         if (error.statusText === 'parsererror') {
           return error.responseText;
