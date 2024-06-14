@@ -15,28 +15,31 @@
           <span class="fa fa-calendar agenda-icon"></span>
         </div>
       </div>
-      <div class="analytics-box">
-        <div class="analytics-box-title-block">Timeline
+      <div class="analytics-box-container">
+        <div class="analytics-box">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div class="analytics-box-title-block">Timeline </div>
+            <form class="timeline-radio-selectors">
+              <label class="radio-label">
+                <input type="radio" name="timeline-selector" value="timeline-active-users">
+                <span class="radio-label-btn">Active devices</span>
+              </label>
+              <label class="radio-label">
+                <input type="radio" name="timeline-selector" value="timeline-sessions">
+                <span class="radio-label-btn">Sessions</span>
+              </label>
+              <label class="radio-label">
+                <input type="radio" name="timeline-selector" value="timeline-screen-views">
+                <span class="radio-label-btn">Screen views</span>
+              </label>
+              <label class="radio-label">
+                <input type="radio" name="timeline-selector" value="timeline-clicks">
+                <span class="radio-label-btn">Interactions</span>
+              </label>
+            </form>
+          </div>
+          <div class="chart-holder"></div>
         </div>
-        <form class="timeline-radio-selectors">
-          <label class="radio-label">
-            <input type="radio" name="timeline-selector" value="timeline-active-users">
-            <span class="radio-label-btn">Active devices</span>
-          </label>
-          <label class="radio-label">
-            <input type="radio" name="timeline-selector" value="timeline-sessions">
-            <span class="radio-label-btn">Sessions</span>
-          </label>
-          <label class="radio-label">
-            <input type="radio" name="timeline-selector" value="timeline-screen-views">
-            <span class="radio-label-btn">Screen views</span>
-          </label>
-          <label class="radio-label">
-            <input type="radio" name="timeline-selector" value="timeline-clicks">
-            <span class="radio-label-btn">Interactions</span>
-          </label>
-        </form>
-        <div class="chart-holder"></div>
       </div>
       <div class="analytics-box-holder">
 
@@ -48,7 +51,21 @@
               <div class="analytics-title-prior-period">Prior period</div>
               <div class="analytics-title-select-period">Selected period</div>
             </div>
-            <div class="analytics-row-wrapper-metrics">
+            <div class="analytics-row-wrapper-app-metrics">
+              <!--Content will be loaded here from handlebars template-->
+            </div>
+          </div>
+        </div>
+        
+        <div class="analytics-box-container">
+          <div class="analytics-box">
+            <div class="analytics-box-title-block">Session metrics</div>
+            <div class="analytics-title-row">
+              <div class="analytics-title-metric">Metric</div>
+              <div class="analytics-title-prior-period">Prior period</div>
+              <div class="analytics-title-select-period">Selected period</div>
+            </div>
+            <div class="analytics-row-wrapper-session-metrics">
               <!--Content will be loaded here from handlebars template-->
             </div>
           </div>
@@ -56,21 +73,26 @@
 
         <div class="analytics-box-container">
           <div class="analytics-box">
-            <div class="analytics-box-title-block">Most active users</div>
-            <form class="users-radio-selectors">
-              <label class="radio-label">
-                <input type="radio" name="users-selector" value="users-sessions">
-                <span class="radio-label-btn">Sessions</span>
-              </label>
-              <label class="radio-label">
-                <input type="radio" name="users-selector" value="users-screen-views">
-                <span class="radio-label-btn">Screen views</span>
-              </label>
-              <label class="radio-label">
-                <input type="radio" name="users-selector" value="users-clicks">
-                <span class="radio-label-btn">Interactions</span>
-              </label>
-            </form>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div class="analytics-box-title-block">Most active users</div>
+              <form class="users-radio-selectors">
+                <label class="radio-label">
+                  <input type="radio" name="users-selector" value="users-sessions">
+                  <span class="radio-label-btn">Sessions</span>
+                </label>
+                <label class="radio-label">
+                  <input type="radio" name="users-selector" value="users-screen-views">
+                  <span class="radio-label-btn">Screen views</span>
+                </label>
+                <label class="radio-label">
+                  <input type="radio" name="users-selector" value="users-clicks">
+                  <span class="radio-label-btn">Interactions</span>
+                </label>
+              </form>
+            </div>
+            <div class="analytics-title-row">
+              <div class="analytics-title-total">Total</div>
+            </div>
             <div class="analytics-row-wrapper analytics-row-wrapper-users">
               <!--Content will be loaded here from handlebars template-->
             </div>
@@ -78,6 +100,7 @@
               <span class="fa fa-long-arrow-right"></span>
             </div>
           </div>
+          <hr/>
           <div class="analytics-box actions-by-user">
             <span class="analytics-box-title-span">Actions per user</span>
             <div class="see-more inline more-actions-by-user">See all
@@ -88,22 +111,26 @@
 
         <div class="analytics-box-container">
           <div class="analytics-box">
-            <div class="analytics-box-title-block">Most popular screens
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div class="analytics-box-title-block">Most popular screens</div>
+              <form class="screens-radio-selectors">
+                <label class="radio-label">
+                  <input type="radio" name="screen-selector" value="screens-sessions">
+                  <span class="radio-label-btn">Sessions</span>
+                </label>
+                <label class="radio-label">
+                  <input type="radio" name="screen-selector" value="screens-screen-views">
+                  <span class="radio-label-btn">Screen views</span>
+                </label>
+                <label class="radio-label">
+                  <input type="radio" name="screen-selector" value="screens-clicks">
+                  <span class="radio-label-btn">Interactions</span>
+                </label>
+              </form>
             </div>
-            <form class="screens-radio-selectors">
-              <label class="radio-label">
-                <input type="radio" name="screen-selector" value="screens-sessions">
-                <span class="radio-label-btn">Sessions</span>
-              </label>
-              <label class="radio-label">
-                <input type="radio" name="screen-selector" value="screens-screen-views">
-                <span class="radio-label-btn">Screen views</span>
-              </label>
-              <label class="radio-label">
-                <input type="radio" name="screen-selector" value="screens-clicks">
-                <span class="radio-label-btn">Interactions</span>
-              </label>
-            </form>
+            <div class="analytics-title-row">
+              <div class="analytics-title-total">Total</div>
+            </div>
             <div class="analytics-row-wrapper analytics-row-wrapper-screen">
               <!--Content will be loaded here from handlebars template-->
             </div>
@@ -111,6 +138,7 @@
               <span class="fa fa-long-arrow-right"></span>
             </div>
           </div>
+          <hr/>
           <div class="analytics-box actions-by-screen">
             <span class="analytics-box-title-span">Interactions per screen</span>
             <div class="see-more inline more-actions-by-screen">See all
@@ -119,6 +147,35 @@
           </div>
         </div>
 
+        <div class="analytics-box-container">
+          <div class="analytics-box">
+            <div class="analytics-box-title-block">Communication
+            </div>
+            <div class="analytics-title-row">
+              <div class="analytics-title-total">Total</div>
+            </div>
+            <div id="communication-data" class="analytics-row-wrapper">
+              <!--Content will be loaded here from handlebars template-->
+            </div>
+          </div>
+        </div>
+
+        <div class="analytics-box-container">
+          <div class="analytics-box">
+            <div class="analytics-box-title-block">Technology</div>
+            <div class="analytics-title-row technology-stats-title">
+              <div></div>
+              <div>New</div>
+              <div>Total</div>
+            </div>
+            <div class="analytics-row-wrapper-technology">
+              <!--Content will be loaded here from handlebars template-->
+            </div>
+            <div class="see-more more-technology-stats">See all
+              <span class="fa fa-long-arrow-right"></span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
     <!--date picker-->
@@ -206,6 +263,7 @@
             <span class="fa fa-angle-left"></span>
           </div>
           <div class="header-title">All users</div>
+          <a class="btn-round btn-default btn export-table-data">Export as CSV</a>
         </div>
       </div>
       <div class="options-wrapper">
@@ -214,6 +272,9 @@
             <tr>
               <th data-priority="1">User</th>
               <th>Sessions</th>
+              <th>Av. screens per session</th>
+              <th>Av. interactions per session</th>
+              <th>Average session length</th>
             </tr>
           </thead>
         </table>
@@ -243,6 +304,7 @@
             <span class="fa fa-angle-left"></span>
           </div>
           <div class="header-title">Actions per user</div>
+          <a class="btn-round btn-default btn export-table-data">Export as CSV</a>
         </div>
       </div>
       <div class="options-wrapper">
@@ -269,6 +331,7 @@
             <span class="fa fa-angle-left"></span>
           </div>
           <div class="header-title">All screens</div>
+          <a class="btn-round btn-default btn export-table-data">Export as CSV</a>
         </div>
       </div>
       <div class="options-wrapper">
@@ -306,6 +369,7 @@
             <span class="fa fa-angle-left"></span>
           </div>
           <div class="header-title">Interactions per screen</div>
+          <a class="btn-round btn-default btn export-table-data">Export as CSV</a>
         </div>
       </div>
       <div class="options-wrapper">
@@ -317,6 +381,31 @@
               <th data-priority="2">Event action</th>
               <th>Event label</th>
               <th>Count</th>
+            </tr>
+          </thead>
+        </table>
+      </div>
+    </div>
+    <!-- technology report overlay-->
+    <div class="full-screen-overlay technology-report-overlay">
+      <div class="full-screen-overlay-header">
+        <div class="header-controls">
+          <div class="close-button">
+            <span class="fa fa-angle-left"></span>
+          </div>
+          <div class="header-title">Technology report</div>
+          <a class="btn-round btn-default btn export-table-data">Export as CSV</a>
+        </div>
+      </div>
+      <div class="options-wrapper">
+        <table class="display responsive technology-report-table" width="100%">
+          <thead>
+            <tr>
+              <th data-priority="1">Operating system</th>
+              <th>Browser type</th>
+              <th>Total devices</th>
+              <th>New devices</th>
+              <th>Sessions</th>
             </tr>
           </thead>
         </table>
