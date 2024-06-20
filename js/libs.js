@@ -876,7 +876,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
   function renderData(periodInMs, context) {
     // RENDER APP METRICS
     renderAppMetrics({ container: $container[0], appMetrics: pvDataArray.metricsData});
-    
+
     // RENDER SESSION METRICS
     renderSessionMetrics({ container: $container[0], sessionMetrics: pvDataArray.metricsData });
 
@@ -893,7 +893,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
     }));
 
     $container.find('#communication-data').html(compiledCommunicationTemplate(communicationData));
-   
+
 
     // RENDER MOST ACTIVE USERS
     switch ($container.find('[name="users-selector"]:checked').val()) {
@@ -1096,6 +1096,54 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
 
   async function getMetricsData(currentPeriodStartDate, currentPeriodEndDate, priorPeriodStartDate, groupBy) {
     const periodDuration = moment.duration(moment(currentPeriodEndDate).diff(moment(currentPeriodStartDate))).add(groupBy !== 'hour' ? 1 : 0, groupBy);
+    let previousPeriodNewUsers;
+    let currentPeriodNewUsers;
+    let previousPeriodUsers;
+    let currentPeriodUsers;
+
+    // get active devices
+    let previousPeriod = await Fliplet.App.Analytics.Aggregate.count({
+      source: source,
+      column: 'uniqueDevices',
+      from: priorPeriodStartDate,
+      to: moment(currentPeriodStartDate).subtract(1, 'ms').format('YYYY-MM-DD')
+    });
+
+    previousPeriodUsers = previousPeriod;
+
+    // 2. get devices up to end of previous period
+    let currentPeriod = await Fliplet.App.Analytics.Aggregate.count({
+      source: source,
+      column: 'uniqueDevices',
+      from: currentPeriodStartDate,
+      to: currentPeriodEndDate
+    });
+
+    currentPeriodUsers = currentPeriod;
+
+    // Get new devices up to start of previous period
+    let countUpToStartOfPriorPeriod = await Fliplet.App.Analytics.Aggregate.count({
+      source: source,
+      column: 'uniqueDevices',
+      to: moment(priorPeriodStartDate).subtract(1, 'ms').format('YYYY-MM-DD')
+    });
+
+    let countUpToStartOfCurrentPeriod = await Fliplet.App.Analytics.Aggregate.count({
+      source: source,
+      column: 'uniqueDevices',
+      to: moment(currentPeriodStartDate).subtract(1, 'ms').format('YYYY-MM-DD')
+    });
+
+    previousPeriodNewUsers = countUpToStartOfCurrentPeriod - countUpToStartOfPriorPeriod;
+
+    // 3. get all time total count
+    let countUpToEndOfCurrentPeriod = await Fliplet.App.Analytics.Aggregate.count({
+      source: source,
+      column: 'uniqueDevices',
+      to: currentPeriodEndDate
+    });
+
+    currentPeriodNewUsers = countUpToEndOfCurrentPeriod - countUpToStartOfCurrentPeriod;
 
     const response = await Fliplet.App.Analytics.Aggregate.get({
       source: source,
@@ -1103,14 +1151,14 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
       from: priorPeriodStartDate,
       to: currentPeriodEndDate,
     });
-    
+
     const { 0: { data: prior } = {}, 1: { data: current } = {} } = response.logs || response || [{}, {}];
 
     setLoadingProgress();
 
-    const activeDevices = [sumBy('totalDevices')(prior), sumBy('totalDevices')(current)];
-    const newDevices = [sumBy('uniqueDevices')(prior), sumBy('uniqueDevices')(current)];
-    const returningDevices = [activeDevices[0] - newDevices[0], activeDevices[1] - newDevices[1]];
+    const activeDevices = [previousPeriodUsers, currentPeriodUsers];
+    const newDevices = [previousPeriodNewUsers, currentPeriodNewUsers];
+    const returningDevices = [previousPeriodUsers - previousPeriodNewUsers, currentPeriodUsers - currentPeriodNewUsers];
     const sessions = [sumBy('uniqueSessions')(prior), sumBy('uniqueSessions')(current)];
     const screenViews = [sumBy('totalPageViews')(prior), sumBy('totalPageViews')(current)];
     const avgScreenPerSession = [divideSafely(screenViews[0], sessions[0]), divideSafely(screenViews[1], sessions[1])];
@@ -1127,7 +1175,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
       avgSessionDuration,
       interactions
     };
-  } 
+  }
 
   async function getCommunicationData(currentPeriodStartDate, currentPeriodEndDate ) {
     const { logs } = await Fliplet.App.Analytics.Aggregate.get({
@@ -1150,7 +1198,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
       sentSMS,
       sentPushNotifications
     }
-  } 
+  }
 
   function getTimelineData(currentPeriodStartDate, currentPeriodEndDate, priorPeriodStartDate, groupBy) {
     var periodDuration = moment.duration(moment(currentPeriodEndDate).diff(moment(currentPeriodStartDate))).add(groupBy !== 'hour' ? 1 : 0, groupBy);
@@ -1755,19 +1803,19 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
       to: analyticsEndDate,
       includeCount: true
     };
-    
+
     renderDataTable(xhrOptions, 'technology-report', 'os');
   }
 
   async function exportTableData() {
     const { context, xhrOptions, type } = currentTableOptions;
     const appName = Fliplet.Env.get('appName');
-    
+
     const fetchingFunction = {
       'aggregate': Fliplet.App.Analytics.Aggregate.get,
       'logs': Fliplet.App.Analytics.get
     }[type];
-  
+
     try {
       const data = await fetchingFunction({...xhrOptions, limit: false, offset: 0, format: 'csv'}, { processData: false}).catch(function(error) {
         // parsererror is returned when the response is not a valid JSON, and it's expected for CSV responses
@@ -1792,7 +1840,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
       console.error('Error exporting table data', error);
     }
   }
-  
+
   document.querySelectorAll('.export-table-data').forEach(node => node.addEventListener('click', exportTableData));
 
   function start() {
