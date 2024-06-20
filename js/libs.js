@@ -1145,6 +1145,9 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
 
     currentPeriodNewUsers = countUpToEndOfCurrentPeriod - countUpToStartOfCurrentPeriod;
 
+    const previousPeriodReturningDevices = (previousPeriodUsers - previousPeriodNewUsers) >= 0 ? previousPeriodUsers - previousPeriodNewUsers : 0;
+    const currentPeriodReturningDevices = (currentPeriodUsers - currentPeriodNewUsers) >= 0 ? currentPeriodUsers - currentPeriodNewUsers : 0;
+
     const response = await Fliplet.App.Analytics.Aggregate.get({
       source: source,
       period: Math.round(periodDuration.asDays()),
@@ -1158,7 +1161,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
 
     const activeDevices = [previousPeriodUsers, currentPeriodUsers];
     const newDevices = [previousPeriodNewUsers, currentPeriodNewUsers];
-    const returningDevices = [previousPeriodUsers - previousPeriodNewUsers, currentPeriodUsers - currentPeriodNewUsers];
+    const returningDevices = [previousPeriodReturningDevices, currentPeriodReturningDevices];
     const sessions = [sumBy('uniqueSessions')(prior), sumBy('uniqueSessions')(current)];
     const screenViews = [sumBy('totalPageViews')(prior), sumBy('totalPageViews')(current)];
     const avgScreenPerSession = [divideSafely(screenViews[0], sessions[0]), divideSafely(screenViews[1], sessions[1])];
