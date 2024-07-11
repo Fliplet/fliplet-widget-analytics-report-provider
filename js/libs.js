@@ -1822,7 +1822,8 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
     try {
       const data = await fetchingFunction({...xhrOptions, limit: false, offset: 0, format: 'csv'}, { processData: false}).catch(function(error) {
         // parsererror is returned when the response is not a valid JSON, and it's expected for CSV responses
-        if (error.statusText === 'parsererror') {
+        // error with statusText "OK" is an edge case, happening in some browsers; it shouldn't be an error
+        if (error.statusText === 'parsererror' || error.statusText === 'OK')  {
           return error.responseText;
         }
         console.error('Error fetching table data', error);
