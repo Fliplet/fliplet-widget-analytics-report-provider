@@ -643,3 +643,32 @@ span.analytics-box-number-prior {
 .btn-round {
   border-radius: 25px;
 }
+
+.error-container {
+  display: none;
+  text-align: center;
+  margin-top: 20px;
+}
+
+.error-container p {
+  margin-bottom: 10px;
+  color: #c00;
+}
+
+.error-container .retry-button {
+  font-size: 14px;
+  padding: 8px 15px;
+  border-radius: 20px;
+  border: 1px solid rgba(21, 60, 73, 0.2);
+  cursor: pointer;
+  display: inline-block;
+}
+
+.has-error .error-container {
+  display: block;
+}
+
+.has-error .app-analytics-container {
+  opacity: 0.5;
+  pointer-events: none;
+}

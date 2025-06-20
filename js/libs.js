@@ -292,13 +292,27 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
 
   function startLoading() {
     setLoadingProgress({ reset: true });
-    $('.widget-holder').addClass('is-loading');
+    $('.widget-holder').removeClass('has-error').addClass('is-loading');
   }
 
   function stopLoading() {
     setTimeout(function() {
       $('.widget-holder').removeClass('is-loading');
     }, 500);
+  }
+
+  function showError(message, retryCallback) {
+    stopLoading();
+    var $holder = $('.widget-holder');
+    $holder.addClass('has-error');
+    $holder.find('.error-container p').text(message || 'Failed to load analytics data.');
+    $holder.find('.retry-button').off('click').one('click', function() {
+      $holder.removeClass('has-error');
+      startLoading();
+      if (typeof retryCallback === 'function') {
+        retryCallback();
+      }
+    });
   }
 
   var progress = 0;
@@ -852,6 +866,9 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
       Fliplet.Widget.autosize();
     }).catch(function(error) {
       console.error(error);
+      showError('Failed to load analytics data.', function() {
+        getNewDataToRender(context, limit);
+      });
     });
   }
 
