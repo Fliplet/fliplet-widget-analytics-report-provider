@@ -730,6 +730,27 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
   }
 
   function getDataFromPersistentVariable() {
+    if (configuration.startDate && configuration.endDate) {
+      dateSelectMode = 'custom-dates';
+      $('[name="date-selector"][value="custom-dates"]').prop('checked', true);
+
+      // Show custom date inputs
+      $('.custom-dates-inputs').css('height', 'auto');
+
+      // Set date picker values
+      var startDate = moment(configuration.startDate).toDate();
+      var endDate = moment(configuration.endDate).toDate();
+      $('.pickerStartDate').datepicker('update', startDate);
+      $('.pickerEndDate').datepicker('update', endDate);
+      $container.find('.apply-button').prop('disabled', false);
+
+      calculateAnalyticsDatesCustom(configuration.startDate, configuration.endDate);
+      updateTimeframe(analyticsStartDate, analyticsEndDate);
+      getNewDataToRender('day', 5);
+
+      return;
+    }
+
     // get dates and times
     Fliplet.App.Storage.get(DATE_STORE_KEY)
       .then(function(analyticsDateTime) {
