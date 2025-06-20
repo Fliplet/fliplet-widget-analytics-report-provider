@@ -7,7 +7,7 @@ var data = Fliplet.Widget.getData(widgetId) || {};
 var element = $('.app-analytics-container');
 
 if (data.startDate && data.endDate) {
-  Fliplet.App.Storage.remove('analytics-date-time');
+  Fliplet.App.Storage.remove(DATE_STORE_KEY);
 }
 
 window.addEventListener('resize', function() {
