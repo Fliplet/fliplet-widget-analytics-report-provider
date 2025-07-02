@@ -513,8 +513,6 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
               .endOf('day')
               .format('YYYY-MM-DD HH:mm:ss[Z]');
 
-            console.log('customStartDateVariable', customStartDateVariable);
-            console.log('customEndDateVariable', customEndDateVariable);
             if (typeof customStartDateVariable === 'undefined') {
               $(this).parents('.date-picker').find('.custom-dates-inputs').css({ height: 'auto' });
               $(this).parents('.date-picker').find('.custom-start-date-alert').addClass('active');
