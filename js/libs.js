@@ -503,7 +503,8 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
           case 'custom-dates':
             customStartDateVariable = moment($(this).parents('.date-picker').find('.pickerStartDate').data('datepicker').dates[0]).utc().format('YYYY-MM-DD');
             customEndDateVariable = moment($(this).parents('.date-picker').find('.pickerEndDate').data('datepicker').dates[0]).utc().format('YYYY-MM-DD');
-
+            console.log('customStartDateVariable', customStartDateVariable);
+            console.log('customEndDateVariable', customEndDateVariable);
             if (typeof customStartDateVariable === 'undefined') {
               $(this).parents('.date-picker').find('.custom-dates-inputs').css({ height: 'auto' });
               $(this).parents('.date-picker').find('.custom-start-date-alert').addClass('active');
@@ -730,27 +731,6 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
   }
 
   function getDataFromPersistentVariable() {
-    if (configuration.startDate && configuration.endDate) {
-      dateSelectMode = 'custom-dates';
-      $('[name="date-selector"][value="custom-dates"]').prop('checked', true);
-
-      // Show custom date inputs
-      $('.custom-dates-inputs').css('height', 'auto');
-
-      // Set date picker values
-      var startDate = moment(configuration.startDate).toDate();
-      var endDate = moment(configuration.endDate).toDate();
-      $('.pickerStartDate').datepicker('update', startDate);
-      $('.pickerEndDate').datepicker('update', endDate);
-      $container.find('.apply-button').prop('disabled', false);
-
-      calculateAnalyticsDatesCustom(configuration.startDate, configuration.endDate);
-      updateTimeframe(analyticsStartDate, analyticsEndDate);
-      getNewDataToRender('day', 5);
-
-      return;
-    }
-
     // get dates and times
     Fliplet.App.Storage.get(DATE_STORE_KEY)
       .then(function(analyticsDateTime) {
@@ -1843,8 +1823,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
     try {
       const data = await fetchingFunction({...xhrOptions, limit: false, offset: 0, format: 'csv'}, { processData: false}).catch(function(error) {
         // parsererror is returned when the response is not a valid JSON, and it's expected for CSV responses
-        // error with statusText "OK" is an edge case, happening in some browsers; it shouldn't be an error
-        if (error.statusText === 'parsererror' || error.statusText === 'OK')  {
+        if (error.statusText === 'parsererror') {
           return error.responseText;
         }
         console.error('Error fetching table data', error);
