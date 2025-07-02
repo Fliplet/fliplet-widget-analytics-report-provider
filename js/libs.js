@@ -501,17 +501,17 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
             closeOverlay();
             break;
           case 'custom-dates':
-            // Get start date and set to start of day (00:00:00)
+                        // Get start date and set to start of day (00:00:00)
             customStartDateVariable = moment($(this).parents('.date-picker').find('.pickerStartDate').data('datepicker').dates[0])
               .utc()
               .startOf('day')
-              .format('YYYY-MM-DD HH:mm:ss');
+              .format('YYYY-MM-DD HH:mm:ss[Z]');
 
             // Get end date and set to end of day (23:59:59)
             customEndDateVariable = moment($(this).parents('.date-picker').find('.pickerEndDate').data('datepicker').dates[0])
               .utc()
               .endOf('day')
-              .format('YYYY-MM-DD HH:mm:ss');
+              .format('YYYY-MM-DD HH:mm:ss[Z]');
 
             console.log('customStartDateVariable', customStartDateVariable);
             console.log('customEndDateVariable', customEndDateVariable);
