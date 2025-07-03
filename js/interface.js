@@ -6,10 +6,6 @@ var widgetId = parseInt(Fliplet.Widget.getDefaultId(), 10);
 var data = Fliplet.Widget.getData(widgetId) || {};
 var element = $('.app-analytics-container');
 
-if (data.startDate && data.endDate) {
-  Fliplet.App.Storage.remove('analytics-date-time');
-}
-
 window.addEventListener('resize', function() {
   if (!$('body').hasClass('freeze')) {
     Fliplet.Widget.autosize();
