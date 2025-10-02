@@ -986,12 +986,17 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
           break;
       }
     });
-    timelineActiveDevicesDataPrior = _.orderBy(timelineActiveDevicesDataPrior, function(item) {
-      return item[0];
-    }, ['asc']);
-    timelineActiveDevicesData = _.orderBy(timelineActiveDevicesData, function(item) {
-      return item[0];
-    }, ['asc']);
+    timelineActiveDevicesDataPrior = Fliplet.Utils.orderBy(
+      timelineActiveDevicesDataPrior,
+      [item => item[0]],
+      ['asc']
+    );
+
+    timelineActiveDevicesData = Fliplet.Utils.orderBy(
+      timelineActiveDevicesData,
+      [item => item[0]],
+      ['asc']
+    );
 
     // Sessions
     timelineSessionsDataPrior = []; // Cleans it
@@ -1020,12 +1025,18 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
           break;
       }
     });
-    timelineSessionsDataPrior = _.orderBy(timelineSessionsDataPrior, function(item) {
-      return item[0];
-    }, ['asc']);
-    timelineSessionsData = _.orderBy(timelineSessionsData, function(item) {
-      return item[0];
-    }, ['asc']);
+    timelineSessionsDataPrior = Fliplet.Utils.orderBy(
+      timelineSessionsDataPrior,
+      [item => item[0]],
+      ['asc']
+    );
+
+    timelineSessionsData = Fliplet.Utils.orderBy(
+      timelineSessionsData,
+      [item => item[0]],
+      ['asc']
+    );
+
 
     // Screen views
     timelineScreenViewsDataPrior = []; // Cleans it
@@ -1054,12 +1065,18 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
           break;
       }
     });
-    timelineScreenViewsDataPrior = _.orderBy(timelineScreenViewsDataPrior, function(item) {
-      return item[0];
-    }, ['asc']);
-    timelineScreenViewsData = _.orderBy(timelineScreenViewsData, function(item) {
-      return item[0];
-    }, ['asc']);
+    timelineScreenViewsDataPrior = Fliplet.Utils.orderBy(
+      timelineScreenViewsDataPrior,
+      [item => item[0]],
+      ['asc']
+    );
+
+    timelineScreenViewsData = Fliplet.Utils.orderBy(
+      timelineScreenViewsData,
+      [item => item[0]],
+      ['asc']
+    );
+
 
     // Interaction
     timelineInteractionsDataPrior = []; // Cleans it
@@ -1088,12 +1105,18 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
           break;
       }
     });
-    timelineInteractionsDataPrior = _.orderBy(timelineInteractionsDataPrior, function(item) {
-      return item[0];
-    }, ['asc']);
-    timelineInteractionsData = _.orderBy(timelineInteractionsData, function(item) {
-      return item[0];
-    }, ['asc']);
+    timelineInteractionsDataPrior = Fliplet.Utils.orderBy(
+      timelineInteractionsDataPrior,
+      [item => item[0]],
+      ['asc']
+    );
+
+    timelineInteractionsData = Fliplet.Utils.orderBy(
+      timelineInteractionsData,
+      [item => item[0]],
+      ['asc']
+    );
+
 
     // RENDER TIMELINE
     switch ($container.find('[name="timeline-selector"]:checked').val()) {
@@ -1707,7 +1730,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
     }
   }
 
-  var columnSearch = _.debounce(function(column, value) {
+  var columnSearch = Fliplet.Utils.debounce(function(column, value) {
     column
       .search(value)
       .draw();
@@ -1739,9 +1762,9 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
     $container.find(configTableContext[context].selectorsToShow).removeClass('hidden');
     $container.find(configTableContext[context].selectorsToHide).addClass('hidden');
 
-    var options = _.extend({}, configTableContext[context], {
+    var options = Fliplet.Utils.extend({}, configTableContext[context], {
       ajax: function(data, callback) {
-        var query = _.extend({}, xhrOptions);
+        var query = Fliplet.Utils.extend({}, xhrOptions);
 
         query.limit = data.length;
         query.offset = data.start;

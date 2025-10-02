@@ -37,9 +37,13 @@ Fliplet.Widget.register('AnalyticsReport:1.0.0', function() {
     if (Object.keys(analyticsReports).length === 1 && false) {
       report = analyticsReports[Object.keys(analyticsReports)[0]];
     } else if (options.id) {
-      report = _.find(analyticsReports, { id: parseInt(options.id, 10) });
+      report = Fliplet.Utils.find(analyticsReports, function(r) {
+        return r.id === parseInt(options.id, 10);
+      });
     } else if (options.uuid) {
-      report = _.find(analyticsReports, { uuid: parseInt(options.uuid, 10) });
+      report = Fliplet.Utils.find(analyticsReports, function(r) {
+        return r.uuid === parseInt(options.uuid, 10);
+      });
     } else if (typeof options.index !== 'undefined') {
       report = analyticsReports[parseInt(options.index, 10)];
     } else {

@@ -11,6 +11,7 @@
     "dependencies": [
       "fliplet-core",
       "fliplet-studio-ui",
+      "fliplet-utils",
       "highcharts",
       "handlebars",
       "moment",
