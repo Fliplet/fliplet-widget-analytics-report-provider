@@ -986,17 +986,12 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
           break;
       }
     });
-    timelineActiveDevicesDataPrior = Fliplet.Utils.orderBy(
-      timelineActiveDevicesDataPrior,
-      [item => item[0]],
-      ['asc']
-    );
-
-    timelineActiveDevicesData = Fliplet.Utils.orderBy(
-      timelineActiveDevicesData,
-      [item => item[0]],
-      ['asc']
-    );
+    timelineActiveDevicesDataPrior = Fliplet.Utils.orderBy(timelineActiveDevicesDataPrior, function(item) {
+      return item[0];
+    }, ['asc']);
+    timelineActiveDevicesData = Fliplet.Utils.orderBy(timelineActiveDevicesData, function(item) {
+      return item[0];
+    }, ['asc']);
 
     // Sessions
     timelineSessionsDataPrior = []; // Cleans it
@@ -1025,17 +1020,12 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
           break;
       }
     });
-    timelineSessionsDataPrior = Fliplet.Utils.orderBy(
-      timelineSessionsDataPrior,
-      [item => item[0]],
-      ['asc']
-    );
-
-    timelineSessionsData = Fliplet.Utils.orderBy(
-      timelineSessionsData,
-      [item => item[0]],
-      ['asc']
-    );
+    timelineSessionsDataPrior = Fliplet.Utils.orderBy(timelineSessionsDataPrior, function(item) {
+      return item[0];
+    }, ['asc']);
+    timelineSessionsData = Fliplet.Utils.orderBy(timelineSessionsData, function(item) {
+      return item[0];
+    }, ['asc']);
 
 
     // Screen views
@@ -1065,17 +1055,12 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
           break;
       }
     });
-    timelineScreenViewsDataPrior = Fliplet.Utils.orderBy(
-      timelineScreenViewsDataPrior,
-      [item => item[0]],
-      ['asc']
-    );
-
-    timelineScreenViewsData = Fliplet.Utils.orderBy(
-      timelineScreenViewsData,
-      [item => item[0]],
-      ['asc']
-    );
+    timelineScreenViewsDataPrior = Fliplet.Utils.orderBy(timelineScreenViewsDataPrior, function(item) {
+      return item[0];
+    }, ['asc']);
+    timelineScreenViewsData = Fliplet.Utils.orderBy(timelineScreenViewsData, function(item) {
+      return item[0];
+    }, ['asc']);
 
 
     // Interaction
@@ -1105,17 +1090,12 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
           break;
       }
     });
-    timelineInteractionsDataPrior = Fliplet.Utils.orderBy(
-      timelineInteractionsDataPrior,
-      [item => item[0]],
-      ['asc']
-    );
-
-    timelineInteractionsData = Fliplet.Utils.orderBy(
-      timelineInteractionsData,
-      [item => item[0]],
-      ['asc']
-    );
+    timelineInteractionsDataPrior = Fliplet.Utils.orderBy(timelineInteractionsDataPrior, function(item) {
+      return item[0];
+    }, ['asc']);
+    timelineInteractionsData = Fliplet.Utils.orderBy(timelineInteractionsData, function(item) {
+      return item[0];
+    }, ['asc']);
 
 
     // RENDER TIMELINE
