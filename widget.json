@@ -16,7 +16,8 @@
       "moment",
       "jquery",
       "bootstrap",
-      "font-awesome"
+      "font-awesome",
+      "lodash"
     ],
     "assets": [
       "vendor/bootstrap-datepicker3.css",
