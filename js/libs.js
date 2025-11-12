@@ -567,7 +567,15 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
           name: 'app-analytics'
         });
 
-        renderUserActionsDatatable();
+        var optionsWrapper = $container.find('.actions-per-user-overlay .options-wrapper');
+        if (!hasUserData()) {
+          optionsWrapper.find('table.actions-per-user').hide();
+          optionsWrapper.find('.analytics-no-data-message-overlay-wrapper').show();
+        } else {
+          optionsWrapper.find('.analytics-no-data-message-overlay-wrapper').hide();
+          optionsWrapper.find('table.actions-per-user').show();
+          renderUserActionsDatatable();
+        }
       })
       .on('click', '.more-popular-sessions', function() {
         $container.find('.popular-sessions-overlay').addClass('active');
@@ -662,7 +670,12 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
           label: value
         });
 
-        switch (value) {
+        if (!hasUserData()) {
+          $(this).parents('.analytics-box').find('.analytics-row-wrapper-users').html('');
+          $container.find('.analytics-no-data-message-wrapper').show();
+        } else {
+          $container.find('.analytics-no-data-message-wrapper').hide();
+          switch (value) {
           case 'users-sessions':
             $(this).parents('.analytics-box').find('.analytics-row-wrapper-users').html(compiledActiveUserTemplate(pvDataArray.activeUserData.map(({ userEmail, uniqueSessions }) => ({ userEmail, count: uniqueSessions }))));
             break;
@@ -674,6 +687,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
             break;
           default:
             break;
+        }
         }
       })
       .on('change', '[name="screen-selector"]', function() {
@@ -901,6 +915,9 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
     renderData(periodInMs, context);
   }
 
+  function hasUserData() {
+    return pvDataArray.activeUserData && Array.isArray(pvDataArray.activeUserData) && pvDataArray.activeUserData.length > 0 && pvDataArray.activeUserData.some(function(user) { return user && user.userEmail; });
+  }
 
   function renderData(periodInMs, context) {
     // RENDER APP METRICS
@@ -925,7 +942,12 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
 
 
     // RENDER MOST ACTIVE USERS
-    switch ($container.find('[name="users-selector"]:checked').val()) {
+    if (!hasUserData()) {
+      $container.find('.analytics-row-wrapper-users').html('');
+      $container.find('.analytics-no-data-message-wrapper').show();
+    } else {
+      $container.find('.analytics-no-data-message-wrapper').hide();
+      switch ($container.find('[name="users-selector"]:checked').val()) {
       case 'users-sessions':
         $container.find('.analytics-row-wrapper-users').html(compiledActiveUserTemplate(pvDataArray.activeUserData.map(({ userEmail, uniqueSessions }) => ({ userEmail, count: uniqueSessions }))));
         break;
@@ -937,6 +959,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
         break;
       default:
         break;
+      }
     }
 
     // RENDER MOST POPULAR SCREENS
@@ -957,7 +980,6 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
     // RENDER TECHNOLOGY STATS
     const technologyStatsWrapper = document.querySelector('.analytics-row-wrapper-technology');
     renderTechnologyStats(pvDataArray.technologyReportData, technologyStatsWrapper);
-
     // MUTATE TIMELINE DATA
     // Active devices
     timelineActiveDevicesDataPrior = []; // Cleans it

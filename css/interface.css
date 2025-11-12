@@ -215,6 +215,32 @@ span.analytics-box-number-prior {
   margin: 0;
 }
 
+.analytics-no-data-message {
+  padding: 20px;
+  text-align: center;
+  color: #666;
+}
+
+.analytics-no-data-message p {
+  margin: 0;
+}
+
+.analytics-no-data-message-overlay {
+  padding: 40px;
+  text-align: center;
+  color: #666;
+  font-size: 16px;
+}
+
+.analytics-no-data-message-overlay p {
+  margin: 0;
+}
+
+.analytics-no-data-message-wrapper,
+.analytics-no-data-message-overlay-wrapper {
+  display: none;
+}
+
 .app-analytics-container .see-more {
   font-size: 12px;
   padding: 10px 10px 0 10px;
