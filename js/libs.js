@@ -956,7 +956,26 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
 
     // RENDER TECHNOLOGY STATS
     const technologyStatsWrapper = document.querySelector('.analytics-row-wrapper-technology');
-    renderTechnologyStats(pvDataArray.technologyReportData, technologyStatsWrapper);
+    if (technologyStatsWrapper && pvDataArray.technologyReportData && Array.isArray(pvDataArray.technologyReportData)) {
+      // Group by 'os'
+      const grouped = pvDataArray.technologyReportData.reduce((acc, item) => {
+        if (item && item.os) {
+          const os = item.os;
+          if (!acc[os]) {
+            acc[os] = [];
+          }
+          acc[os].push(item);
+        }
+        return acc;
+      }, {});
+      // Map and sum
+      const aggregatedTechnologyData = Object.entries(grouped).map(([os, items]) => ({
+        os,
+        totalDevices: items.reduce((sum, v) => sum + (parseInt(v && v.totalDevices ? v.totalDevices : 0, 10) || 0), 0),
+        newDevices: items.reduce((sum, v) => sum + (parseInt(v && v.newDevices ? v.newDevices : 0, 10) || 0), 0)
+      }));
+      renderTechnologyStats(aggregatedTechnologyData, technologyStatsWrapper);
+    }
 
     // MUTATE TIMELINE DATA
     // Active devices
