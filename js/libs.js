@@ -925,18 +925,28 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
 
 
     // RENDER MOST ACTIVE USERS
-    switch ($container.find('[name="users-selector"]:checked').val()) {
-      case 'users-sessions':
-        $container.find('.analytics-row-wrapper-users').html(compiledActiveUserTemplate(pvDataArray.activeUserData.map(({ userEmail, uniqueSessions }) => ({ userEmail, count: uniqueSessions }))));
-        break;
-      case 'users-screen-views':
-        $container.find('.analytics-row-wrapper-users').html(compiledActiveUserTemplate(pvDataArray.activeUserData.map(({ userEmail, totalPageViews }) => ({ userEmail, count: totalPageViews }))));
-        break;
-      case 'users-clicks':
-        $container.find('.analytics-row-wrapper-users').html(compiledActiveUserTemplate(pvDataArray.activeUserData.map(({ userEmail, totalEvents }) => ({ userEmail, count: totalEvents }))));
-        break;
-      default:
-        break;
+    // Hide users section if no user data (app has no login functionality)
+    var hasUserData = pvDataArray.activeUserData && pvDataArray.activeUserData.length > 0;
+
+    if (hasUserData) {
+      $container.find('.analytics-users-section').show();
+
+      switch ($container.find('[name="users-selector"]:checked').val()) {
+        case 'users-sessions':
+          $container.find('.analytics-row-wrapper-users').html(compiledActiveUserTemplate(pvDataArray.activeUserData.map(({ userEmail, uniqueSessions }) => ({ userEmail, count: uniqueSessions }))));
+          break;
+        case 'users-screen-views':
+          $container.find('.analytics-row-wrapper-users').html(compiledActiveUserTemplate(pvDataArray.activeUserData.map(({ userEmail, totalPageViews }) => ({ userEmail, count: totalPageViews }))));
+          break;
+        case 'users-clicks':
+          $container.find('.analytics-row-wrapper-users').html(compiledActiveUserTemplate(pvDataArray.activeUserData.map(({ userEmail, totalEvents }) => ({ userEmail, count: totalEvents }))));
+          break;
+        default:
+          break;
+      }
+    } else {
+      // Hide the entire users section when there's no login/user data
+      $container.find('.analytics-users-section').hide();
     }
 
     // RENDER MOST POPULAR SCREENS
