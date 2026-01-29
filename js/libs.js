@@ -413,7 +413,12 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
         var value = $('.date-picker-option:checked').val();
 
         if (value === 'custom-dates') {
-          $container.find('.apply-button').prop('disabled', true);
+          var hasStart = typeof $container.find('.pickerStartDate').data('datepicker').dates[0] !== 'undefined';
+          var hasEnd = typeof $container.find('.pickerEndDate').data('datepicker').dates[0] !== 'undefined';
+          var bothValid = hasStart && hasEnd
+            && !($container.find('.pickerEndDate').data('datepicker').dates[0] < $container.find('.pickerStartDate').data('datepicker').dates[0]);
+
+          $container.find('.apply-button').prop('disabled', !bothValid);
 
           var targetHeight = $(this).parents('.date-picker').find('.custom-dates-hidden-content').outerHeight();
 
@@ -430,6 +435,19 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
       .on('click', '.agenda-icon, .timeframe-text', function() {
         $container.find('.date-picker').addClass('active');
         $body.addClass('freeze');
+
+        // Restore selection state when reopening
+        if (dateSelectMode) {
+          $('[name="date-selector"][value="' + dateSelectMode + '"]').prop('checked', true);
+
+          if (dateSelectMode === 'custom-dates') {
+            $container.find('.custom-dates-inputs').css({ height: 'auto' });
+            $container.find('.apply-button').prop('disabled', false);
+          } else {
+            $container.find('.custom-dates-inputs').css({ height: 0 });
+            $container.find('.apply-button').prop('disabled', false);
+          }
+        }
 
         // GA Track event
         Fliplet.Studio.emit('track-event', {
@@ -819,6 +837,13 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
 
           updateTimeframe(analyticsStartDate, analyticsEndDate);
           $('[name="date-selector"][value="' + dateSelectMode + '"]').prop('checked', true);
+
+          if (dateSelectMode === 'custom-dates') {
+            $('.custom-dates-inputs').css('height', 'auto');
+            $('.pickerStartDate').datepicker('update', moment(analyticsStartDate).toDate());
+            $('.pickerEndDate').datepicker('update', moment(analyticsEndDate).toDate());
+            $container.find('.apply-button').prop('disabled', false);
+          }
         } else {
           // default to last 7 days if nothing previously selected
           dateSelectMode = 'last-7-days';
