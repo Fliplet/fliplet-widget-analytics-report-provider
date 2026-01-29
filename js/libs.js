@@ -342,13 +342,27 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
     **********************************************************/
     var locale = navigator.language || 'en';
     var localeData = moment.localeData(locale);
-    var format = localeData.longDateFormat('L');
+
+    // Detect date format from the browser's Intl API to respect the user's locale
+    var format;
+
+    try {
+      var formatter = new Intl.DateTimeFormat(locale);
+      var parts = formatter.formatToParts(new Date(2026, 0, 29));
+      var order = parts.filter(function(p) { return p.type !== 'literal'; }).map(function(p) { return p.type; });
+      var sep = (parts.find(function(p) { return p.type === 'literal'; }) || {}).value || '/';
+
+      var formatMap = { day: 'DD', month: 'MM', year: 'YYYY' };
+      format = order.map(function(type) { return formatMap[type]; }).join(sep);
+    } catch (e) {
+      format = localeData.longDateFormat('L');
+    }
 
     var dateDelimiters = /[./-]/g;
     var dateFormatParts = format.match(dateDelimiters);
 
     if (!dateFormatParts || dateFormatParts.length !== 2) {
-      format = 'YYYY/MM/DD';
+      format = 'DD/MM/YYYY';
     }
 
     $container.find('.datepicker').datepicker({
