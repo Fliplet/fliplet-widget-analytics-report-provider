@@ -440,7 +440,25 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
         });
       })
       .on('click', '.apply-button', function() {
-        var dateValue = $(this).parents('.date-picker').find('input[name="date-selector"]:checked').val();
+        var $datePicker = $(this).parents('.date-picker');
+        var dateValue = $datePicker.find('input[name="date-selector"]:checked').val();
+
+        // Check if custom dates are both set to today before proceeding
+        if (dateValue === 'custom-dates') {
+          var startDate = $datePicker.find('.pickerStartDate').data('datepicker').dates[0];
+          var endDate = $datePicker.find('.pickerEndDate').data('datepicker').dates[0];
+
+          if (startDate && endDate) {
+            var startIsToday = moment(startDate).utc().isSame(moment().utc(), 'day');
+            var endIsToday = moment(endDate).utc().isSame(moment().utc(), 'day');
+
+            if (startIsToday && endIsToday) {
+              $('#todayDataModal').modal('show');
+
+              return;
+            }
+          }
+        }
 
         // Add spinner
         startLoading();
@@ -525,7 +543,6 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
             } else {
               // No validation errors so update the dates
               dateSelectMode = dateValue;
-              calculateAnalyticsDatesCustom(customStartDateVariable, customEndDateVariable);
               calculateAnalyticsDatesCustom(customStartDateVariable, customEndDateVariable);
               updateTimeframe(analyticsStartDate, analyticsEndDate);
               getNewDataToRender('day', 5);
@@ -715,6 +732,14 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
     getChart().series[0].setData(chartEmptyData);
     getChart().series[1].setData(chartEmptyData);
   }
+
+  $('#todayDataModalOk').on('click', function() {
+    $('#todayDataModal').modal('hide');
+
+    // Select "Last 24 hours" and trigger Apply
+    $('[name="date-selector"][value="last-24-hours"]').prop('checked', true);
+    $container.find('.apply-button').trigger('click');
+  });
 
   function closeOverlay() {
     // close overlay
