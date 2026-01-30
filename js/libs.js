@@ -348,7 +348,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
 
     try {
       var formatter = new Intl.DateTimeFormat(locale);
-      var parts = formatter.formatToParts(new Date(2026, 0, 29));
+      var parts = formatter.formatToParts(new Date());
       var order = parts.filter(function(p) { return p.type !== 'literal'; }).map(function(p) { return p.type; });
       var sep = (parts.find(function(p) { return p.type === 'literal'; }) || {}).value || '/';
 
@@ -362,7 +362,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
     var dateFormatParts = format.match(dateDelimiters);
 
     if (!dateFormatParts || dateFormatParts.length !== 2) {
-      format = 'DD/MM/YYYY';
+      format = 'YYYY/MM/DD';
     }
 
     $container.find('.datepicker').datepicker({
