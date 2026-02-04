@@ -700,6 +700,8 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
           default:
             break;
         }
+
+        updateChartAxisExtremes();
       })
       .on('change', '[name="users-selector"]', function() {
         var value = $('[name="users-selector"]:checked').val();
@@ -763,6 +765,98 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
     timelineChart[configuration.id] = Highcharts.chart(element, options);
     getChart().series[0].setData(chartEmptyData);
     getChart().series[1].setData(chartEmptyData);
+  }
+
+  function updateChartAxisExtremes() {
+    var chart = getChart();
+
+    if (!chart || !analyticsStartDate || !analyticsEndDate) {
+      return;
+    }
+
+    // Use UTC timestamps to match API data format
+    var minTimestamp = moment.utc(analyticsStartDate).startOf('day').valueOf();
+    var maxTimestamp = moment.utc(analyticsEndDate).startOf('day').valueOf();
+    var rangeDays = moment.utc(analyticsEndDate).diff(moment.utc(analyticsStartDate), 'days');
+
+    // Determine label format based on range
+    var labelFormat;
+
+    if (rangeDays <= 31) {
+      labelFormat = 'D. MMM';
+    } else if (rangeDays <= 365) {
+      labelFormat = 'D. MMM';
+    } else {
+      labelFormat = "MMM 'YY";
+    }
+
+    chart.xAxis[0].update({
+      min: minTimestamp,
+      max: maxTimestamp,
+      startOnTick: false,
+      endOnTick: false,
+      labels: {
+        formatter: function() {
+          return moment.utc(this.value).format(labelFormat);
+        }
+      },
+      tickPositioner: function() {
+        var positions = [];
+        var start = moment.utc(analyticsStartDate).startOf('day');
+        var end = moment.utc(analyticsEndDate).startOf('day');
+
+        // Always include start date
+        positions.push(start.valueOf());
+
+        // Calculate appropriate interval based on range
+        var interval;
+        var unit;
+
+        if (rangeDays <= 7) {
+          interval = 1;
+          unit = 'days';
+        } else if (rangeDays <= 31) {
+          interval = 2;
+          unit = 'days';
+        } else if (rangeDays <= 90) {
+          interval = 7;
+          unit = 'days';
+        } else if (rangeDays <= 180) {
+          interval = 14;
+          unit = 'days';
+        } else {
+          interval = 1;
+          unit = 'months';
+        }
+
+        // Add intermediate ticks
+        var current = start.clone().add(interval, unit);
+
+        while (current.isBefore(end)) {
+          positions.push(current.valueOf());
+          current.add(interval, unit);
+        }
+
+        // Always include end date, but remove last intermediate tick if too close
+        if (positions[positions.length - 1] !== end.valueOf()) {
+          var lastTick = moment.utc(positions[positions.length - 1]);
+          var daysToEnd = end.diff(lastTick, 'days');
+
+          // If last tick is less than interval away from end, remove it
+          if (unit === 'days' && daysToEnd < interval && positions.length > 1) {
+            positions.pop();
+          } else if (unit === 'months' && daysToEnd < 15 && positions.length > 1) {
+            positions.pop();
+          }
+
+          positions.push(end.valueOf());
+        }
+
+        return positions;
+      }
+    }, false);
+
+    chart.redraw();
   }
 
   $('#todayDataModalOk').on('click', function() {
@@ -1199,6 +1293,8 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
       default:
         break;
     }
+
+    updateChartAxisExtremes();
 
     Fliplet.Widget.autosize();
   }
