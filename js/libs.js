@@ -342,21 +342,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
     **********************************************************/
     var locale = navigator.language || 'en';
     var localeData = moment.localeData(locale);
-
-    // Detect date format from the browser's Intl API to respect the user's locale
-    var format;
-
-    try {
-      var formatter = new Intl.DateTimeFormat(locale);
-      var parts = formatter.formatToParts(new Date());
-      var order = parts.filter(function(p) { return p.type !== 'literal'; }).map(function(p) { return p.type; });
-      var sep = (parts.find(function(p) { return p.type === 'literal'; }) || {}).value || '/';
-
-      var formatMap = { day: 'DD', month: 'MM', year: 'YYYY' };
-      format = order.map(function(type) { return formatMap[type]; }).join(sep);
-    } catch (e) {
-      format = localeData.longDateFormat('L');
-    }
+    var format = localeData.longDateFormat('L');
 
     var dateDelimiters = /[./-]/g;
     var dateFormatParts = format.match(dateDelimiters);
@@ -413,12 +399,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
         var value = $('.date-picker-option:checked').val();
 
         if (value === 'custom-dates') {
-          var hasStart = typeof $container.find('.pickerStartDate').data('datepicker').dates[0] !== 'undefined';
-          var hasEnd = typeof $container.find('.pickerEndDate').data('datepicker').dates[0] !== 'undefined';
-          var bothValid = hasStart && hasEnd
-            && !($container.find('.pickerEndDate').data('datepicker').dates[0] < $container.find('.pickerStartDate').data('datepicker').dates[0]);
-
-          $container.find('.apply-button').prop('disabled', !bothValid);
+          $container.find('.apply-button').prop('disabled', true);
 
           var targetHeight = $(this).parents('.date-picker').find('.custom-dates-hidden-content').outerHeight();
 
@@ -435,19 +416,6 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
       .on('click', '.agenda-icon, .timeframe-text', function() {
         $container.find('.date-picker').addClass('active');
         $body.addClass('freeze');
-
-        // Restore selection state when reopening
-        if (dateSelectMode) {
-          $('[name="date-selector"][value="' + dateSelectMode + '"]').prop('checked', true);
-
-          if (dateSelectMode === 'custom-dates') {
-            $container.find('.custom-dates-inputs').css({ height: 'auto' });
-            $container.find('.apply-button').prop('disabled', false);
-          } else {
-            $container.find('.custom-dates-inputs').css({ height: 0 });
-            $container.find('.apply-button').prop('disabled', false);
-          }
-        }
 
         // GA Track event
         Fliplet.Studio.emit('track-event', {
@@ -472,25 +440,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
         });
       })
       .on('click', '.apply-button', function() {
-        var $datePicker = $(this).parents('.date-picker');
-        var dateValue = $datePicker.find('input[name="date-selector"]:checked').val();
-
-        // Check if custom dates are both set to today before proceeding
-        if (dateValue === 'custom-dates') {
-          var startDate = $datePicker.find('.pickerStartDate').data('datepicker').dates[0];
-          var endDate = $datePicker.find('.pickerEndDate').data('datepicker').dates[0];
-
-          if (startDate && endDate) {
-            var startIsToday = moment(startDate).utc().isSame(moment().utc(), 'day');
-            var endIsToday = moment(endDate).utc().isSame(moment().utc(), 'day');
-
-            if (startIsToday && endIsToday) {
-              $('#todayDataModal').modal('show');
-
-              return;
-            }
-          }
-        }
+        var dateValue = $(this).parents('.date-picker').find('input[name="date-selector"]:checked').val();
 
         // Add spinner
         startLoading();
@@ -551,17 +501,17 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
             closeOverlay();
             break;
           case 'custom-dates':
-            // Get start date
+                        // Get start date and set to start of day (00:00:00)
             customStartDateVariable = moment($(this).parents('.date-picker').find('.pickerStartDate').data('datepicker').dates[0])
               .utc()
               .startOf('day')
-              .format('YYYY-MM-DD');
+              .format('YYYY-MM-DD HH:mm:ss[Z]');
 
-            // Get end date
+            // Get end date and set to end of day (23:59:59)
             customEndDateVariable = moment($(this).parents('.date-picker').find('.pickerEndDate').data('datepicker').dates[0])
               .utc()
-              .startOf('day')
-              .format('YYYY-MM-DD');
+              .endOf('day')
+              .format('YYYY-MM-DD HH:mm:ss[Z]');
 
             if (typeof customStartDateVariable === 'undefined') {
               $(this).parents('.date-picker').find('.custom-dates-inputs').css({ height: 'auto' });
@@ -575,6 +525,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
             } else {
               // No validation errors so update the dates
               dateSelectMode = dateValue;
+              calculateAnalyticsDatesCustom(customStartDateVariable, customEndDateVariable);
               calculateAnalyticsDatesCustom(customStartDateVariable, customEndDateVariable);
               updateTimeframe(analyticsStartDate, analyticsEndDate);
               getNewDataToRender('day', 5);
@@ -765,14 +716,6 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
     getChart().series[1].setData(chartEmptyData);
   }
 
-  $('#todayDataModalOk').on('click', function() {
-    $('#todayDataModal').modal('hide');
-
-    // Select "Last 24 hours" and trigger Apply
-    $('[name="date-selector"][value="last-24-hours"]').prop('checked', true);
-    $container.find('.apply-button').trigger('click');
-  });
-
   function closeOverlay() {
     // close overlay
     $container.find('.full-screen-overlay').removeClass('active');
@@ -837,13 +780,6 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
 
           updateTimeframe(analyticsStartDate, analyticsEndDate);
           $('[name="date-selector"][value="' + dateSelectMode + '"]').prop('checked', true);
-
-          if (dateSelectMode === 'custom-dates') {
-            $('.custom-dates-inputs').css('height', 'auto');
-            $('.pickerStartDate').datepicker('update', moment(analyticsStartDate).toDate());
-            $('.pickerEndDate').datepicker('update', moment(analyticsEndDate).toDate());
-            $container.find('.apply-button').prop('disabled', false);
-          }
         } else {
           // default to last 7 days if nothing previously selected
           dateSelectMode = 'last-7-days';
