@@ -472,6 +472,14 @@ span.analytics-box-number-prior {
   display: block;
 }
 
+#todayDataModal .modal-dialog {
+  transform: none !important;
+  display: flex;
+  align-items: center;
+  min-height: 100vh;
+  margin: 0 auto;
+}
+
 .app-analytics-container table th,
 .app-analytics-container table td,
 .app-analytics-container table caption {
