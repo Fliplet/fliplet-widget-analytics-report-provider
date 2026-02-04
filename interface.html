@@ -9,7 +9,7 @@
   <div class="app-analytics-container">
     <div class="analytics-main-content">
       <div class="analytics-box timeframe-text">
-        <div class="analytics-box-title-span">Timeframe <span class="timeframe-disclaimer">(report data is refreshed every 4 hours)</span></div>
+        <div class="analytics-box-title-span">Timeframe <span class="timeframe-disclaimer">(report data is refreshed daily)</span></div>
         <div class="date-box">
           <span class="analytics-date-range">&nbsp;</span>
           <span class="fa fa-calendar agenda-icon"></span>
@@ -409,6 +409,24 @@
             </tr>
           </thead>
         </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: today's data not available -->
+  <div class="modal fade" id="todayDataModal" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title">Data not yet available</h4>
+        </div>
+        <div class="modal-body">
+          <p>Analytics data for today is not yet available. Data is compiled daily after 2:00 AM UTC.</p>
+          <p>The "Last 24 hours" view will be selected instead.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" id="todayDataModalOk">OK</button>
+        </div>
       </div>
     </div>
   </div>

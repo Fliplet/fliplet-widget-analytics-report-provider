@@ -342,7 +342,21 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
     **********************************************************/
     var locale = navigator.language || 'en';
     var localeData = moment.localeData(locale);
-    var format = localeData.longDateFormat('L');
+
+    // Detect date format from the browser's Intl API to respect the user's locale
+    var format;
+
+    try {
+      var formatter = new Intl.DateTimeFormat(locale);
+      var parts = formatter.formatToParts(new Date());
+      var order = parts.filter(function(p) { return p.type !== 'literal'; }).map(function(p) { return p.type; });
+      var sep = (parts.find(function(p) { return p.type === 'literal'; }) || {}).value || '/';
+
+      var formatMap = { day: 'DD', month: 'MM', year: 'YYYY' };
+      format = order.map(function(type) { return formatMap[type]; }).join(sep);
+    } catch (e) {
+      format = localeData.longDateFormat('L');
+    }
 
     var dateDelimiters = /[./-]/g;
     var dateFormatParts = format.match(dateDelimiters);
@@ -399,7 +413,12 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
         var value = $('.date-picker-option:checked').val();
 
         if (value === 'custom-dates') {
-          $container.find('.apply-button').prop('disabled', true);
+          var hasStart = typeof $container.find('.pickerStartDate').data('datepicker').dates[0] !== 'undefined';
+          var hasEnd = typeof $container.find('.pickerEndDate').data('datepicker').dates[0] !== 'undefined';
+          var bothValid = hasStart && hasEnd
+            && !($container.find('.pickerEndDate').data('datepicker').dates[0] < $container.find('.pickerStartDate').data('datepicker').dates[0]);
+
+          $container.find('.apply-button').prop('disabled', !bothValid);
 
           var targetHeight = $(this).parents('.date-picker').find('.custom-dates-hidden-content').outerHeight();
 
@@ -416,6 +435,19 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
       .on('click', '.agenda-icon, .timeframe-text', function() {
         $container.find('.date-picker').addClass('active');
         $body.addClass('freeze');
+
+        // Restore selection state when reopening
+        if (dateSelectMode) {
+          $('[name="date-selector"][value="' + dateSelectMode + '"]').prop('checked', true);
+
+          if (dateSelectMode === 'custom-dates') {
+            $container.find('.custom-dates-inputs').css({ height: 'auto' });
+            $container.find('.apply-button').prop('disabled', false);
+          } else {
+            $container.find('.custom-dates-inputs').css({ height: 0 });
+            $container.find('.apply-button').prop('disabled', false);
+          }
+        }
 
         // GA Track event
         Fliplet.Studio.emit('track-event', {
@@ -440,7 +472,25 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
         });
       })
       .on('click', '.apply-button', function() {
-        var dateValue = $(this).parents('.date-picker').find('input[name="date-selector"]:checked').val();
+        var $datePicker = $(this).parents('.date-picker');
+        var dateValue = $datePicker.find('input[name="date-selector"]:checked').val();
+
+        // Check if custom dates are both set to today before proceeding
+        if (dateValue === 'custom-dates') {
+          var startDate = $datePicker.find('.pickerStartDate').data('datepicker').dates[0];
+          var endDate = $datePicker.find('.pickerEndDate').data('datepicker').dates[0];
+
+          if (startDate && endDate) {
+            var startIsToday = moment(startDate).utc().isSame(moment().utc(), 'day');
+            var endIsToday = moment(endDate).utc().isSame(moment().utc(), 'day');
+
+            if (startIsToday && endIsToday) {
+              $('#todayDataModal').modal('show');
+
+              return;
+            }
+          }
+        }
 
         // Add spinner
         startLoading();
@@ -501,17 +551,17 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
             closeOverlay();
             break;
           case 'custom-dates':
-                        // Get start date and set to start of day (00:00:00)
+            // Get start date
             customStartDateVariable = moment($(this).parents('.date-picker').find('.pickerStartDate').data('datepicker').dates[0])
               .utc()
               .startOf('day')
-              .format('YYYY-MM-DD HH:mm:ss[Z]');
+              .format('YYYY-MM-DD');
 
-            // Get end date and set to end of day (23:59:59)
+            // Get end date
             customEndDateVariable = moment($(this).parents('.date-picker').find('.pickerEndDate').data('datepicker').dates[0])
               .utc()
-              .endOf('day')
-              .format('YYYY-MM-DD HH:mm:ss[Z]');
+              .startOf('day')
+              .format('YYYY-MM-DD');
 
             if (typeof customStartDateVariable === 'undefined') {
               $(this).parents('.date-picker').find('.custom-dates-inputs').css({ height: 'auto' });
@@ -525,7 +575,6 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
             } else {
               // No validation errors so update the dates
               dateSelectMode = dateValue;
-              calculateAnalyticsDatesCustom(customStartDateVariable, customEndDateVariable);
               calculateAnalyticsDatesCustom(customStartDateVariable, customEndDateVariable);
               updateTimeframe(analyticsStartDate, analyticsEndDate);
               getNewDataToRender('day', 5);
@@ -651,6 +700,8 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
           default:
             break;
         }
+
+        updateChartAxisExtremes();
       })
       .on('change', '[name="users-selector"]', function() {
         var value = $('[name="users-selector"]:checked').val();
@@ -716,6 +767,106 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
     getChart().series[1].setData(chartEmptyData);
   }
 
+  function updateChartAxisExtremes() {
+    var chart = getChart();
+
+    if (!chart || !analyticsStartDate || !analyticsEndDate) {
+      return;
+    }
+
+    // Use UTC timestamps to match API data format
+    var minTimestamp = moment.utc(analyticsStartDate).startOf('day').valueOf();
+    var maxTimestamp = moment.utc(analyticsEndDate).startOf('day').valueOf();
+    var rangeDays = moment.utc(analyticsEndDate).diff(moment.utc(analyticsStartDate), 'days');
+
+    // Determine label format based on range
+    var labelFormat;
+
+    if (rangeDays <= 31) {
+      labelFormat = 'D. MMM';
+    } else if (rangeDays <= 365) {
+      labelFormat = 'D. MMM';
+    } else {
+      labelFormat = "MMM 'YY";
+    }
+
+    chart.xAxis[0].update({
+      min: minTimestamp,
+      max: maxTimestamp,
+      startOnTick: false,
+      endOnTick: false,
+      labels: {
+        formatter: function() {
+          return moment.utc(this.value).format(labelFormat);
+        }
+      },
+      tickPositioner: function() {
+        var positions = [];
+        var start = moment.utc(analyticsStartDate).startOf('day');
+        var end = moment.utc(analyticsEndDate).startOf('day');
+
+        // Always include start date
+        positions.push(start.valueOf());
+
+        // Calculate appropriate interval based on range
+        var interval;
+        var unit;
+
+        if (rangeDays <= 7) {
+          interval = 1;
+          unit = 'days';
+        } else if (rangeDays <= 31) {
+          interval = 2;
+          unit = 'days';
+        } else if (rangeDays <= 90) {
+          interval = 7;
+          unit = 'days';
+        } else if (rangeDays <= 180) {
+          interval = 14;
+          unit = 'days';
+        } else {
+          interval = 1;
+          unit = 'months';
+        }
+
+        // Add intermediate ticks
+        var current = start.clone().add(interval, unit);
+
+        while (current.isBefore(end)) {
+          positions.push(current.valueOf());
+          current.add(interval, unit);
+        }
+
+        // Always include end date, but remove last intermediate tick if too close
+        if (positions[positions.length - 1] !== end.valueOf()) {
+          var lastTick = moment.utc(positions[positions.length - 1]);
+          var daysToEnd = end.diff(lastTick, 'days');
+
+          // If last tick is less than interval away from end, remove it
+          if (unit === 'days' && daysToEnd < interval && positions.length > 1) {
+            positions.pop();
+          } else if (unit === 'months' && daysToEnd < 15 && positions.length > 1) {
+            positions.pop();
+          }
+
+          positions.push(end.valueOf());
+        }
+
+        return positions;
+      }
+    }, false);
+
+    chart.redraw();
+  }
+
+  $('#todayDataModalOk').on('click', function() {
+    $('#todayDataModal').modal('hide');
+
+    // Select "Last 24 hours" and trigger Apply
+    $('[name="date-selector"][value="last-24-hours"]').prop('checked', true);
+    $container.find('.apply-button').trigger('click');
+  });
+
   function closeOverlay() {
     // close overlay
     $container.find('.full-screen-overlay').removeClass('active');
@@ -760,6 +911,13 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
 
           updateTimeframe(analyticsStartDate, analyticsEndDate);
           $('[name="date-selector"][value="' + dateSelectMode + '"]').prop('checked', true);
+
+          if (dateSelectMode === 'custom-dates') {
+            $('.custom-dates-inputs').css('height', 'auto');
+            $('.pickerStartDate').datepicker('update', moment(analyticsStartDate).toDate());
+            $('.pickerEndDate').datepicker('update', moment(analyticsEndDate).toDate());
+            $container.find('.apply-button').prop('disabled', false);
+          }
         } else {
           // default to last 7 days if nothing previously selected
           dateSelectMode = 'last-7-days';
@@ -1115,6 +1273,8 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
       default:
         break;
     }
+
+    updateChartAxisExtremes();
 
     Fliplet.Widget.autosize();
   }
