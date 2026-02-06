@@ -292,13 +292,30 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
 
   function startLoading() {
     setLoadingProgress({ reset: true });
-    $('.widget-holder').addClass('is-loading');
+    $('.widget-holder').removeClass('has-error').addClass('is-loading');
   }
 
   function stopLoading() {
     setTimeout(function() {
       $('.widget-holder').removeClass('is-loading');
     }, 500);
+  }
+
+  function showError(message, retryCallback) {
+    stopLoading();
+    var $picker = $container.find('.date-picker');
+    $picker.addClass('active has-error');
+    $body.addClass('freeze');
+    $picker.find('.error-container p').text(message || 'Failed to load analytics data.');
+    $picker.find('.retry-button').off('click').one('click', function() {
+      $picker.removeClass('has-error');
+      closeOverlay();
+      startLoading();
+      if (typeof retryCallback === 'function') {
+        retryCallback();
+      }
+    });
+    Fliplet.Widget.autosize();
   }
 
   var progress = 0;
@@ -412,6 +429,8 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
       .on('click', '.date-picker-option', function() {
         var value = $('.date-picker-option:checked').val();
 
+        $container.find('.date-picker').removeClass('has-error');
+
         if (value === 'custom-dates') {
           var hasStart = typeof $container.find('.pickerStartDate').data('datepicker').dates[0] !== 'undefined';
           var hasEnd = typeof $container.find('.pickerEndDate').data('datepicker').dates[0] !== 'undefined';
@@ -460,9 +479,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
         });
       })
       .on('click', '.close-button', function() {
-        $container.find('.full-screen-overlay').removeClass('active');
-        $body.removeClass('freeze');
-
+        closeOverlay();
         Fliplet.Widget.autosize();
 
         // GA Track event
@@ -870,6 +887,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
   function closeOverlay() {
     // close overlay
     $container.find('.full-screen-overlay').removeClass('active');
+    $container.find('.date-picker').removeClass('has-error');
     $body.removeClass('freeze');
   }
 
@@ -1039,6 +1057,9 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
       Fliplet.Widget.autosize();
     }).catch(function(error) {
       console.error(error);
+      showError('Failed to load analytics data.', function() {
+        getNewDataToRender(context, limit);
+      });
     });
   }
 
