@@ -1370,7 +1370,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
 
   async function getCommunicationData(currentPeriodStartDate, currentPeriodEndDate ) {
     const { logs } = await Fliplet.App.Analytics.Aggregate.get({
-      source: 'master', //Changes for https://weboo.atlassian.net/browse/PS-1690. Notifications are sent using masterAppId, and logs are also created against the master app. So to fetch the notification count, we need to pull the data for the master app (not the production app).
+      source: 'master', //// Notifications are logged against the master app, not production
       from: currentPeriodStartDate,
       to: currentPeriodEndDate,
       includeCount: true,
