@@ -1370,7 +1370,7 @@ Fliplet.Registry.set('comflipletanalytics-report:1.0:core', function(element, da
 
   async function getCommunicationData(currentPeriodStartDate, currentPeriodEndDate ) {
     const { logs } = await Fliplet.App.Analytics.Aggregate.get({
-      source,
+      source: 'master', //// Notifications are logged against the master app, not production
       from: currentPeriodStartDate,
       to: currentPeriodEndDate,
       includeCount: true,
